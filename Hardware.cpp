@@ -57,9 +57,9 @@ void playSuccessSound() {
 
 // ============ MOTOR HELPERS ============
 int clampSpeed(int speed) {
-  if (speed > 400) return 400;
-  if (speed < -400) return -400;
-  return speed;
+  // LUDICROUS SPEED MODE - No limits!
+  // WARNING: Speeds above 400 may damage motors or cause loss of control
+  return speed;  // No clamping!
 }
 
 void stopMotors() {
@@ -67,5 +67,5 @@ void stopMotors() {
 }
 
 void setMotorSpeeds(int left, int right) {
-  motors.setSpeeds(clampSpeed(left), clampSpeed(right));
+  motors.setSpeeds(left, right);  // Direct control, no clamping!
 }

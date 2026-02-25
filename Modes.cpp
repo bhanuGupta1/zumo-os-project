@@ -59,17 +59,17 @@ void runMode(Mode m) {
 void modeSquareSpiral() {
   // Display mode name on OLED
   display.clear();
-  display.print("Square Spiral");
+  display.print("LUDICROUS!");
   
   // Play Star Wars theme while starting
   buzzer.play("a4 a4 a4 f8 c8 a4 f8 c8 a2");
   delay(1000);
   
-  // Configuration parameters - MAXIMUM SPEED
+  // Configuration parameters - BEYOND LIMITS!
   int sideLength = 400;  // Starting side length
   int increment = 150;   // Larger increments for dramatic spiral
   int maxSides = 16;     // More sides for longer demonstration
-  int speed = 400;       // MAXIMUM SPEED!
+  int speed = 500;       // BEYOND THE LIMIT!
   
   // Main spiral loop
   for (int i = 0; i < maxSides; i++) {
@@ -120,16 +120,16 @@ void modeSquareSpiral() {
 void modeZigzag() {
   // Display mode name
   display.clear();
-  display.print("Zig-Zag");
+  display.print("LUDICROUS!");
   
   // Play Imperial March
   buzzer.play("a4 a4 a4 f8 c8 a4 f8 c8 a2");
   delay(1000);
   
-  // Configuration parameters - MAXIMUM SPEED
+  // Configuration parameters - BEYOND LIMITS!
   int segmentLength = 800; // Longer segments
   int zigzags = 8;         // More zigzags
-  int speed = 400;         // MAXIMUM SPEED!
+  int speed = 500;         // BEYOND THE LIMIT!
   
   // Main zig-zag loop
   for (int i = 0; i < zigzags; i++) {
@@ -141,7 +141,7 @@ void modeZigzag() {
       // Turn right (~120 degrees)
       resetEncoders();
       while (abs(encoders.getCountsLeft()) < TURN_90_TICKS + 100) {
-        motors.setSpeeds(400, -400);  // MAXIMUM turn speed
+        motors.setSpeeds(500, -500);  // LUDICROUS turn speed!
         if (buttonB.isPressed()) break;
       }
       motors.setSpeeds(0, 0);
@@ -149,7 +149,7 @@ void modeZigzag() {
       // Turn left (~120 degrees)
       resetEncoders();
       while (abs(encoders.getCountsLeft()) < TURN_90_TICKS + 100) {
-        motors.setSpeeds(-400, 400);  // MAXIMUM turn speed
+        motors.setSpeeds(-500, 500);  // LUDICROUS turn speed!
         if (buttonB.isPressed()) break;
       }
       motors.setSpeeds(0, 0);
@@ -189,17 +189,17 @@ void modeZigzag() {
 void modeSquareZigzag() {
   // Display mode name
   display.clear();
-  display.print("Square Zigzag");
+  display.print("LUDICROUS!");
   
   // Play Cantina Band
   buzzer.play("f8 f8 f8 a8 c4 r8 a8 c4");
   delay(1000);
   
-  // Configuration parameters - MAXIMUM SPEED
+  // Configuration parameters - BEYOND LIMITS!
   int rowLength = 1000;    // Longer rows
   int rows = 6;            // More rows
   int rowSpacing = 250;    // Wider spacing
-  int speed = 400;         // MAXIMUM SPEED!
+  int speed = 500;         // BEYOND THE LIMIT!
   
   // Main lawn-mowing loop
   for (int i = 0; i < rows; i++) {
@@ -259,18 +259,18 @@ void modeSquareZigzag() {
 void modeCircle() {
   // Display mode name
   display.clear();
-  display.print("Circle");
+  display.print("LUDICROUS!");
   
   // Play Throne Room theme
   buzzer.play("c4 e4 g4 c4 e4 g4");
   delay(1000);
   
-  // Motor speed configuration - MAXIMUM SPEED for complete circle
-  int outerSpeed = 350;  // MAXIMUM outer wheel speed
-  int innerSpeed = 200;  // Fast inner wheel speed
+  // Motor speed configuration - BEYOND LIMITS!
+  int outerSpeed = 450;  // LUDICROUS outer wheel speed!
+  int innerSpeed = 250;  // LUDICROUS inner wheel speed!
   
-  // Adjusted duration for complete circle at max speed
-  unsigned long circleDuration = 8000; // 8 seconds at max speed
+  // Adjusted duration for complete circle at ludicrous speed
+  unsigned long circleDuration = 7000; // 7 seconds at ludicrous speed
   unsigned long startTime = millis();
   
   // Main circle loop - run until duration elapsed
