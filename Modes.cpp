@@ -41,19 +41,21 @@ void runMode(Mode m) {
 /*
  * modeSquareSpiral() - Square Spiral Pattern Implementation
  * 
- * Behavior: Robot drives in a square spiral pattern, starting small
- * and gradually expanding outward. Each side is longer than the previous.
+ * Behavior: Robot drives in a square spiral pattern, starting large
+ * and gradually spiraling inward to the center. Each side is shorter
+ * than the previous, creating a tighter spiral.
  * 
  * Algorithm:
  * 1. Drive straight for current side length
  * 2. Turn 90 degrees right
- * 3. Increase side length
- * 4. Repeat
+ * 3. Decrease side length
+ * 4. Repeat until reaching center
  * 
  * Key Features:
  * - Clean 90° turns using encoder-based turnRight90()
  * - Straight lines using encoder-based driveTicks()
- * - Even spacing throughout the spiral
+ * - Tight spacing between spiral loops
+ * - Spirals inward to center point
  * - User can stop anytime with Button B
  */
 void modeSquareSpiral() {
@@ -62,22 +64,21 @@ void modeSquareSpiral() {
   display.print("LUDICROUS!");
   delay(500);
   
-  // Configuration parameters - BEYOND LIMITS!
-  int sideLength = 400;  // Starting side length
-  int increment = 150;   // Larger increments for dramatic spiral
-  int maxSides = 16;     // More sides for longer demonstration
-  int speed = 500;       // BEYOND THE LIMIT!
+  // Configuration parameters - INWARD SPIRAL!
+  int sideLength = 1200;  // Starting side length (large)
+  int decrement = 60;     // Small decrements for tight spiral
+  int speed = 500;        // BEYOND THE LIMIT!
   
-  // Main spiral loop
-  for (int i = 0; i < maxSides; i++) {
+  // Main spiral loop - continue until side length becomes too small
+  while (sideLength > 100) {
     // Drive straight for current side length
     driveTicks(sideLength, speed);
     
     // Turn 90 degrees right (clockwise)
     turnRight90();
     
-    // Increase side length for next iteration (creates expanding spiral)
-    sideLength += increment;
+    // Decrease side length for next iteration (creates inward spiral)
+    sideLength -= decrement;
     
     // Allow user to stop the pattern early
     if (buttonB.isPressed()) break;
