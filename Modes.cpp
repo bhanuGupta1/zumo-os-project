@@ -62,20 +62,25 @@ void modeSquareSpiral() {
   display.print("Square Spiral");
   delay(1000);
   
-  // Configuration parameters
-  int sideLength = 300; // Starting side length in encoder ticks (~30cm)
-  int increment = 100;  // How much to increase each side (creates spiral)
-  int maxSides = 12;    // Total number of sides to draw
+  // Configuration parameters - IMPROVED for smoother, longer pattern
+  int sideLength = 400;  // Starting side length (larger start)
+  int increment = 150;   // Larger increments for more dramatic spiral
+  int maxSides = 16;     // More sides for longer demonstration
+  int speed = 200;       // Slower speed for smoother movement
   
   // Main spiral loop
   for (int i = 0; i < maxSides; i++) {
     // Drive straight for current side length
-    // driveTicks() uses encoders to drive exactly the specified distance
-    driveTicks(sideLength, ENCODER_SPEED);
+    driveTicks(sideLength, speed);
+    
+    // Brief pause for smooth transition
+    delay(100);
     
     // Turn 90 degrees right (clockwise)
-    // turnRight90() uses encoders to turn exactly 90 degrees
     turnRight90();
+    
+    // Brief pause after turn
+    delay(100);
     
     // Increase side length for next iteration (creates expanding spiral)
     sideLength += increment;
@@ -118,36 +123,39 @@ void modeZigzag() {
   display.print("Zig-Zag");
   delay(1000);
   
-  // Configuration parameters
-  int segmentLength = 600; // Length of each straight segment
-  int zigzags = 6;         // Number of zig-zag segments to complete
+  // Configuration parameters - IMPROVED for smoother, longer pattern
+  int segmentLength = 800; // Longer segments for better visibility
+  int zigzags = 8;         // More zigzags for longer demonstration
+  int speed = 200;         // Slower speed for smoother movement
   
   // Main zig-zag loop
   for (int i = 0; i < zigzags; i++) {
     // Drive forward for one segment
-    driveTicks(segmentLength, ENCODER_SPEED);
+    driveTicks(segmentLength, speed);
+    
+    // Brief pause for smooth transition
+    delay(150);
     
     // Alternate between left and right turns
     // Using modulo (%) to determine even/odd iteration
     if (i % 2 == 0) {
       // Even iterations: Turn right (~120 degrees for zig-zag effect)
-      resetEncoders();  // Reset encoder counts to 0
-      // Turn until encoders reach target count
+      resetEncoders();
       while (abs(encoders.getCountsLeft()) < TURN_90_TICKS + 100) {
-        motors.setSpeeds(MAZE_TURN_SPEED, -MAZE_TURN_SPEED);  // Right turn
+        motors.setSpeeds(200, -200);  // Slower turn speed
         if (buttonB.isPressed()) break;
       }
-      motors.setSpeeds(0, 0);  // Stop motors
-      delay(200);  // Brief pause for stability
+      motors.setSpeeds(0, 0);
+      delay(150);  // Longer pause for stability
     } else {
       // Odd iterations: Turn left (~120 degrees)
       resetEncoders();
       while (abs(encoders.getCountsLeft()) < TURN_90_TICKS + 100) {
-        motors.setSpeeds(-MAZE_TURN_SPEED, MAZE_TURN_SPEED);  // Left turn
+        motors.setSpeeds(-200, 200);  // Slower turn speed
         if (buttonB.isPressed()) break;
       }
       motors.setSpeeds(0, 0);
-      delay(200);
+      delay(150);
     }
     
     // Allow early exit
@@ -186,29 +194,39 @@ void modeSquareZigzag() {
   display.print("Square Zigzag");
   delay(1000);
   
-  // Configuration parameters
-  int rowLength = 800;     // Length of each row (encoder ticks)
-  int rows = 5;            // Number of rows to complete
-  int rowSpacing = 200;    // Distance between parallel rows
+  // Configuration parameters - IMPROVED for smoother, longer pattern
+  int rowLength = 1000;    // Longer rows for better demonstration
+  int rows = 6;            // More rows for complete coverage
+  int rowSpacing = 250;    // Wider spacing for clearer pattern
+  int speed = 200;         // Slower speed for smoother movement
   
   // Main lawn-mowing loop
   for (int i = 0; i < rows; i++) {
     // Drive forward along the current row
-    driveTicks(rowLength, ENCODER_SPEED);
+    driveTicks(rowLength, speed);
+    
+    // Brief pause at end of row
+    delay(150);
     
     // Move to next row (unless this is the last row)
     if (i < rows - 1) {
       // Alternate turn direction based on even/odd row
       if (i % 2 == 0) {
         // Even rows: Turn right, move to next row, turn right again
-        turnRight90();                      // Turn to face perpendicular
-        driveTicks(rowSpacing, ENCODER_SPEED);  // Move to next row
-        turnRight90();                      // Turn to face along new row
+        turnRight90();
+        delay(100);
+        driveTicks(rowSpacing, speed);
+        delay(100);
+        turnRight90();
+        delay(100);
       } else {
         // Odd rows: Turn left, move to next row, turn left again
-        turnLeft90();                       // Turn to face perpendicular
-        driveTicks(rowSpacing, ENCODER_SPEED);  // Move to next row
-        turnLeft90();                       // Turn to face along new row
+        turnLeft90();
+        delay(100);
+        driveTicks(rowSpacing, speed);
+        delay(100);
+        turnLeft90();
+        delay(100);
       }
     }
     
@@ -251,18 +269,16 @@ void modeCircle() {
   display.print("Circle");
   delay(1000);
   
-  // Motor speed configuration for circular motion
+  // Motor speed configuration for circular motion - IMPROVED for smoother circle
   // To drive in a circle, set different speeds for left and right motors
   // The ratio between speeds determines the radius of the circle
-  int outerSpeed = 220;  // Speed of outer wheel (travels longer arc)
-  int innerSpeed = 120;  // Speed of inner wheel (travels shorter arc)
+  int outerSpeed = 200;  // Slower outer wheel for smoother motion
+  int innerSpeed = 100;  // Slower inner wheel for better control
   
   // Time-based circle completion
-  // Calculate approximate time for one complete circle
-  // This value is calibrated for the Zumo32U4 - may need adjustment
-  // based on battery level, surface friction, and wheel condition
-  unsigned long circleDuration = 6000; // milliseconds for one full circle
-  unsigned long startTime = millis();   // Record start time
+  // Longer duration for more complete, visible circle
+  unsigned long circleDuration = 8000; // 8 seconds for smoother, longer circle
+  unsigned long startTime = millis();
   
   // Main circle loop - run until duration elapsed
   while (millis() - startTime < circleDuration) {
