@@ -65,11 +65,11 @@ void modeSquareSpiral() {
   buzzer.play("a4 a4 a4 f8 c8 a4 f8 c8 a2");
   delay(1000);
   
-  // Configuration parameters - FASTER
+  // Configuration parameters - MAXIMUM SPEED
   int sideLength = 400;  // Starting side length
   int increment = 150;   // Larger increments for dramatic spiral
   int maxSides = 16;     // More sides for longer demonstration
-  int speed = 280;       // FASTER speed
+  int speed = 400;       // MAXIMUM SPEED!
   
   // Main spiral loop
   for (int i = 0; i < maxSides; i++) {
@@ -126,10 +126,10 @@ void modeZigzag() {
   buzzer.play("a4 a4 a4 f8 c8 a4 f8 c8 a2");
   delay(1000);
   
-  // Configuration parameters - FASTER
+  // Configuration parameters - MAXIMUM SPEED
   int segmentLength = 800; // Longer segments
   int zigzags = 8;         // More zigzags
-  int speed = 280;         // FASTER speed
+  int speed = 400;         // MAXIMUM SPEED!
   
   // Main zig-zag loop
   for (int i = 0; i < zigzags; i++) {
@@ -141,7 +141,7 @@ void modeZigzag() {
       // Turn right (~120 degrees)
       resetEncoders();
       while (abs(encoders.getCountsLeft()) < TURN_90_TICKS + 100) {
-        motors.setSpeeds(250, -250);  // Faster turn
+        motors.setSpeeds(400, -400);  // MAXIMUM turn speed
         if (buttonB.isPressed()) break;
       }
       motors.setSpeeds(0, 0);
@@ -149,7 +149,7 @@ void modeZigzag() {
       // Turn left (~120 degrees)
       resetEncoders();
       while (abs(encoders.getCountsLeft()) < TURN_90_TICKS + 100) {
-        motors.setSpeeds(-250, 250);  // Faster turn
+        motors.setSpeeds(-400, 400);  // MAXIMUM turn speed
         if (buttonB.isPressed()) break;
       }
       motors.setSpeeds(0, 0);
@@ -195,11 +195,11 @@ void modeSquareZigzag() {
   buzzer.play("f8 f8 f8 a8 c4 r8 a8 c4");
   delay(1000);
   
-  // Configuration parameters - FASTER
+  // Configuration parameters - MAXIMUM SPEED
   int rowLength = 1000;    // Longer rows
   int rows = 6;            // More rows
   int rowSpacing = 250;    // Wider spacing
-  int speed = 280;         // FASTER speed
+  int speed = 400;         // MAXIMUM SPEED!
   
   // Main lawn-mowing loop
   for (int i = 0; i < rows; i++) {
@@ -265,13 +265,12 @@ void modeCircle() {
   buzzer.play("c4 e4 g4 c4 e4 g4");
   delay(1000);
   
-  // Motor speed configuration - FIXED for complete circle
-  // Adjusted speeds and duration to complete full circle
-  int outerSpeed = 240;  // Faster outer wheel
-  int innerSpeed = 140;  // Faster inner wheel
+  // Motor speed configuration - MAXIMUM SPEED for complete circle
+  int outerSpeed = 350;  // MAXIMUM outer wheel speed
+  int innerSpeed = 200;  // Fast inner wheel speed
   
-  // INCREASED duration to complete full circle (tested value)
-  unsigned long circleDuration = 10000; // 10 seconds for complete circle
+  // Adjusted duration for complete circle at max speed
+  unsigned long circleDuration = 8000; // 8 seconds at max speed
   unsigned long startTime = millis();
   
   // Main circle loop - run until duration elapsed
