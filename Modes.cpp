@@ -60,27 +60,24 @@ void modeSquareSpiral() {
   // Display mode name on OLED
   display.clear();
   display.print("Square Spiral");
+  
+  // Play Star Wars theme while starting
+  buzzer.play("a4 a4 a4 f8 c8 a4 f8 c8 a2");
   delay(1000);
   
-  // Configuration parameters - IMPROVED for smoother, longer pattern
-  int sideLength = 400;  // Starting side length (larger start)
-  int increment = 150;   // Larger increments for more dramatic spiral
+  // Configuration parameters - FASTER
+  int sideLength = 400;  // Starting side length
+  int increment = 150;   // Larger increments for dramatic spiral
   int maxSides = 16;     // More sides for longer demonstration
-  int speed = 200;       // Slower speed for smoother movement
+  int speed = 280;       // FASTER speed
   
   // Main spiral loop
   for (int i = 0; i < maxSides; i++) {
     // Drive straight for current side length
     driveTicks(sideLength, speed);
     
-    // Brief pause for smooth transition
-    delay(100);
-    
     // Turn 90 degrees right (clockwise)
     turnRight90();
-    
-    // Brief pause after turn
-    delay(100);
     
     // Increase side length for next iteration (creates expanding spiral)
     sideLength += increment;
@@ -91,6 +88,9 @@ void modeSquareSpiral() {
   
   // Ensure motors are stopped
   stopMotors();
+  
+  // Play success sound
+  buzzer.play("g32 a32 b32 c64");
   
   // Display completion message
   display.clear();
@@ -121,41 +121,38 @@ void modeZigzag() {
   // Display mode name
   display.clear();
   display.print("Zig-Zag");
+  
+  // Play Imperial March
+  buzzer.play("a4 a4 a4 f8 c8 a4 f8 c8 a2");
   delay(1000);
   
-  // Configuration parameters - IMPROVED for smoother, longer pattern
-  int segmentLength = 800; // Longer segments for better visibility
-  int zigzags = 8;         // More zigzags for longer demonstration
-  int speed = 200;         // Slower speed for smoother movement
+  // Configuration parameters - FASTER
+  int segmentLength = 800; // Longer segments
+  int zigzags = 8;         // More zigzags
+  int speed = 280;         // FASTER speed
   
   // Main zig-zag loop
   for (int i = 0; i < zigzags; i++) {
     // Drive forward for one segment
     driveTicks(segmentLength, speed);
     
-    // Brief pause for smooth transition
-    delay(150);
-    
     // Alternate between left and right turns
-    // Using modulo (%) to determine even/odd iteration
     if (i % 2 == 0) {
-      // Even iterations: Turn right (~120 degrees for zig-zag effect)
+      // Turn right (~120 degrees)
       resetEncoders();
       while (abs(encoders.getCountsLeft()) < TURN_90_TICKS + 100) {
-        motors.setSpeeds(200, -200);  // Slower turn speed
+        motors.setSpeeds(250, -250);  // Faster turn
         if (buttonB.isPressed()) break;
       }
       motors.setSpeeds(0, 0);
-      delay(150);  // Longer pause for stability
     } else {
-      // Odd iterations: Turn left (~120 degrees)
+      // Turn left (~120 degrees)
       resetEncoders();
       while (abs(encoders.getCountsLeft()) < TURN_90_TICKS + 100) {
-        motors.setSpeeds(-200, 200);  // Slower turn speed
+        motors.setSpeeds(-250, 250);  // Faster turn
         if (buttonB.isPressed()) break;
       }
       motors.setSpeeds(0, 0);
-      delay(150);
     }
     
     // Allow early exit
@@ -163,6 +160,7 @@ void modeZigzag() {
   }
   
   stopMotors();
+  buzzer.play("g32 a32 b32 c64");
   display.clear();
   display.print("Complete!");
   delay(1000);
@@ -192,21 +190,21 @@ void modeSquareZigzag() {
   // Display mode name
   display.clear();
   display.print("Square Zigzag");
+  
+  // Play Cantina Band
+  buzzer.play("f8 f8 f8 a8 c4 r8 a8 c4");
   delay(1000);
   
-  // Configuration parameters - IMPROVED for smoother, longer pattern
-  int rowLength = 1000;    // Longer rows for better demonstration
-  int rows = 6;            // More rows for complete coverage
-  int rowSpacing = 250;    // Wider spacing for clearer pattern
-  int speed = 200;         // Slower speed for smoother movement
+  // Configuration parameters - FASTER
+  int rowLength = 1000;    // Longer rows
+  int rows = 6;            // More rows
+  int rowSpacing = 250;    // Wider spacing
+  int speed = 280;         // FASTER speed
   
   // Main lawn-mowing loop
   for (int i = 0; i < rows; i++) {
     // Drive forward along the current row
     driveTicks(rowLength, speed);
-    
-    // Brief pause at end of row
-    delay(150);
     
     // Move to next row (unless this is the last row)
     if (i < rows - 1) {
@@ -214,19 +212,13 @@ void modeSquareZigzag() {
       if (i % 2 == 0) {
         // Even rows: Turn right, move to next row, turn right again
         turnRight90();
-        delay(100);
         driveTicks(rowSpacing, speed);
-        delay(100);
         turnRight90();
-        delay(100);
       } else {
         // Odd rows: Turn left, move to next row, turn left again
         turnLeft90();
-        delay(100);
         driveTicks(rowSpacing, speed);
-        delay(100);
         turnLeft90();
-        delay(100);
       }
     }
     
@@ -235,6 +227,7 @@ void modeSquareZigzag() {
   }
   
   stopMotors();
+  buzzer.play("g32 a32 b32 c64");
   display.clear();
   display.print("Complete!");
   delay(1000);
@@ -267,23 +260,23 @@ void modeCircle() {
   // Display mode name
   display.clear();
   display.print("Circle");
+  
+  // Play Throne Room theme
+  buzzer.play("c4 e4 g4 c4 e4 g4");
   delay(1000);
   
-  // Motor speed configuration for circular motion - IMPROVED for smoother circle
-  // To drive in a circle, set different speeds for left and right motors
-  // The ratio between speeds determines the radius of the circle
-  int outerSpeed = 200;  // Slower outer wheel for smoother motion
-  int innerSpeed = 100;  // Slower inner wheel for better control
+  // Motor speed configuration - FIXED for complete circle
+  // Adjusted speeds and duration to complete full circle
+  int outerSpeed = 240;  // Faster outer wheel
+  int innerSpeed = 140;  // Faster inner wheel
   
-  // Time-based circle completion
-  // Longer duration for more complete, visible circle
-  unsigned long circleDuration = 8000; // 8 seconds for smoother, longer circle
+  // INCREASED duration to complete full circle (tested value)
+  unsigned long circleDuration = 10000; // 10 seconds for complete circle
   unsigned long startTime = millis();
   
   // Main circle loop - run until duration elapsed
   while (millis() - startTime < circleDuration) {
     // Set motor speeds to maintain circular path
-    // Left motor (outer) faster, right motor (inner) slower
     motors.setSpeeds(outerSpeed, innerSpeed);
     
     // Allow user to stop early
@@ -292,6 +285,9 @@ void modeCircle() {
   
   // Stop motors at end of circle
   stopMotors();
+  
+  // Play success sound
+  buzzer.play("g32 a32 b32 c64");
   
   // Display completion message
   display.clear();
