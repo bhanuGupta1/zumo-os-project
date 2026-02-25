@@ -60,10 +60,7 @@ void modeSquareSpiral() {
   // Display mode name on OLED
   display.clear();
   display.print("LUDICROUS!");
-  
-  // Play Star Wars theme while starting
-  buzzer.play("a4 a4 a4 f8 c8 a4 f8 c8 a2");
-  delay(1000);
+  delay(500);
   
   // Configuration parameters - BEYOND LIMITS!
   int sideLength = 400;  // Starting side length
@@ -88,9 +85,6 @@ void modeSquareSpiral() {
   
   // Ensure motors are stopped
   stopMotors();
-  
-  // Play success sound
-  buzzer.play("g32 a32 b32 c64");
   
   // Display completion message
   display.clear();
@@ -121,10 +115,7 @@ void modeZigzag() {
   // Display mode name
   display.clear();
   display.print("LUDICROUS!");
-  
-  // Play Imperial March
-  buzzer.play("a4 a4 a4 f8 c8 a4 f8 c8 a2");
-  delay(1000);
+  delay(500);
   
   // Configuration parameters - BEYOND LIMITS!
   int segmentLength = 800; // Longer segments
@@ -160,7 +151,6 @@ void modeZigzag() {
   }
   
   stopMotors();
-  buzzer.play("g32 a32 b32 c64");
   display.clear();
   display.print("Complete!");
   delay(1000);
@@ -190,10 +180,7 @@ void modeSquareZigzag() {
   // Display mode name
   display.clear();
   display.print("LUDICROUS!");
-  
-  // Play Cantina Band
-  buzzer.play("f8 f8 f8 a8 c4 r8 a8 c4");
-  delay(1000);
+  delay(500);
   
   // Configuration parameters - BEYOND LIMITS!
   int rowLength = 1000;    // Longer rows
@@ -227,7 +214,6 @@ void modeSquareZigzag() {
   }
   
   stopMotors();
-  buzzer.play("g32 a32 b32 c64");
   display.clear();
   display.print("Complete!");
   delay(1000);
@@ -260,10 +246,7 @@ void modeCircle() {
   // Display mode name
   display.clear();
   display.print("LUDICROUS!");
-  
-  // Play Throne Room theme
-  buzzer.play("c4 e4 g4 c4 e4 g4");
-  delay(1000);
+  delay(500);
   
   // Motor speed configuration - BEYOND LIMITS!
   int outerSpeed = 450;  // LUDICROUS outer wheel speed!
@@ -284,9 +267,6 @@ void modeCircle() {
   
   // Stop motors at end of circle
   stopMotors();
-  
-  // Play success sound
-  buzzer.play("g32 a32 b32 c64");
   
   // Display completion message
   display.clear();
