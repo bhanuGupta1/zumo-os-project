@@ -144,40 +144,32 @@ void modeSpiral() {
   delay(1000);
   
   // ========== ADJUSTABLE PARAMETERS ==========
-  // Smaller diameter, smoother spiral
-  int baseSpeed = 400;           // Base motor speed - reduced for better control
-  int startRadiusDiff = inward ? 180 : 15;  // Smaller starting radius
-  int radiusChange = 1;          // Slow gradual change
-  unsigned long loopDelay = 40;  // Slightly longer delay for smoother spiral
-  int minRadius = 10;            // Minimum radius (tightest circle)
-  int maxRadius = 200;           // Smaller maximum radius for tighter spiral
+  // Smooth circular spiral with gradually changing radius
+  int outerSpeed = 400;          // Outer wheel speed (constant)
+  int startInnerSpeed = inward ? 350 : 100;  // Starting inner wheel speed
+  int endInnerSpeed = inward ? 100 : 350;    // Ending inner wheel speed
+  float speedChangeRate = inward ? -0.5 : 0.5;  // How fast to change speed
+  unsigned long loopDelay = 30;  // Delay for smooth spiral
   
   // Main spiral loop
-  int currentRadiusDiff = startRadiusDiff;
+  float currentInnerSpeed = startInnerSpeed;
   
   while (true) {
     // Check limits
-    if (inward && currentRadiusDiff < minRadius) break;
-    if (!inward && currentRadiusDiff > maxRadius) break;
+    if (inward && currentInnerSpeed <= endInnerSpeed) break;
+    if (!inward && currentInnerSpeed >= endInnerSpeed) break;
     
-    // Calculate motor speeds for current radius
-    // Both wheels move forward, but at different speeds to create curve
-    int outerSpeed = baseSpeed;
-    int innerSpeed = baseSpeed - currentRadiusDiff;
-    
-    // Ensure inner speed stays positive and reasonable
-    if (innerSpeed < 50) innerSpeed = 50;  // Keep minimum forward motion
+    // Ensure speeds stay in valid range
+    int innerSpeed = (int)currentInnerSpeed;
+    if (innerSpeed < 50) innerSpeed = 50;
     if (innerSpeed > 500) innerSpeed = 500;
     
     // Set motors to create circular motion
-    motors.setSpeeds(outerSpeed, innerSpeed);
+    // Right wheel is outer (faster), left wheel is inner (slower)
+    motors.setSpeeds(innerSpeed, outerSpeed);
     
-    // Change radius for spiral effect
-    if (inward) {
-      currentRadiusDiff -= radiusChange;  // Decrease for inward
-    } else {
-      currentRadiusDiff += radiusChange;  // Increase for outward
-    }
+    // Gradually change inner wheel speed for spiral effect
+    currentInnerSpeed += speedChangeRate;
     
     // Small delay for smooth spiral
     delay(loopDelay);
@@ -324,45 +316,48 @@ void modeZigzag() {
   // ========== ADJUSTABLE PARAMETERS ==========
   // HOW TO CHANGE THE ZIG-ZAG:
   
-  int segmentLength = 800; // Length of each diagonal segment (in encoder ticks)
+  int segmentLength = 900; // Length of each diagonal segment (in encoder ticks)
                            // INCREASE = longer diagonal lines (try 1000-1200)
                            // DECREASE = shorter, tighter zigzag (try 500-700)
   
-  int zigzags = 8;         // Number of zig-zag segments to perform
+  int zigzags = 6;         // Number of zig-zag segments to perform
                            // INCREASE = more zigzags, longer pattern (try 10-12)
                            // DECREASE = fewer zigzags, shorter pattern (try 5-6)
   
-  int speed = 500;         // Motor speed for straight segments (0-500)
+  int speed = 400;         // Motor speed for straight segments (0-500)
                            // INCREASE = faster movement (max 500)
                            // DECREASE = slower, more controlled (try 300-400)
   
-  int turnAngleTicks = 200; // Turn angle in encoder ticks (controls zigzag sharpness)
+  int turnAngleTicks = 240; // Turn angle in encoder ticks (controls zigzag sharpness)
                             // INCREASE = sharper turns, narrower zigzag (try 250-300)
                             // DECREASE = gentler turns, wider zigzag (try 150-180)
-                            // NOTE: TURN_90_TICKS ≈ 340, so 200 ≈ 60 degrees
+                            // NOTE: TURN_90_TICKS ≈ 320, so 240 ≈ 67 degrees
   
   // Main zig-zag loop
   for (int i = 0; i < zigzags; i++) {
     // Drive forward for one diagonal segment
     driveTicks(segmentLength, speed);
+    delay(100);  // Brief pause for stability
     
     // Alternate between right and left turns to create zigzag
     if (i % 2 == 0) {
       // Turn right (creates the "zig")
       resetEncoders();
       while (abs(encoders.getCountsLeft()) < turnAngleTicks) {
-        motors.setSpeeds(500, -500);  // LUDICROUS turn speed!
+        motors.setSpeeds(400, -400);  // Fast turn speed
         if (buttonB.isPressed()) break;
       }
       motors.setSpeeds(0, 0);
+      delay(100);  // Brief pause after turn
     } else {
       // Turn left (creates the "zag")
       resetEncoders();
       while (abs(encoders.getCountsLeft()) < turnAngleTicks * 2) {  // Double angle to reverse direction
-        motors.setSpeeds(-500, 500);  // LUDICROUS turn speed!
+        motors.setSpeeds(-400, 400);  // Fast turn speed
         if (buttonB.isPressed()) break;
       }
       motors.setSpeeds(0, 0);
+      delay(100);  // Brief pause after turn
     }
     
     // Allow early exit
@@ -376,33 +371,30 @@ void modeZigzag() {
 }
 
 /*
- * modeSquareZigzag() - Square Zig-Zag (Lawn Mowing) Pattern
+ * modeSquareZigzag() - Square Zig-Zag Pattern
  * 
- * WHAT IS A LAWN MOWING PATTERN?
- * A lawn mowing pattern (also called boustrophedon or square zigzag) is
- * a systematic way to cover a rectangular area by driving in parallel
- * straight lines, like mowing a lawn. The robot drives along one row,
- * moves to the next row, then drives back in the opposite direction.
+ * WHAT IS A SQUARE ZIG-ZAG PATTERN?
+ * A square zig-zag creates vertical parallel lines by driving forward,
+ * turning to move sideways, then driving in the opposite direction.
+ * The pattern looks like: | | | (vertical rectangles side by side)
  * 
- * Behavior: Robot drives straight along a row, makes two 90-degree turns
- * to position itself at the start of the next parallel row, then drives
- * back in the opposite direction. This continues until the entire area
- * is covered with parallel rows.
+ * Behavior: Robot drives straight up, makes two 90-degree turns to move
+ * to the next column position, then drives straight down. This continues
+ * creating parallel vertical lines.
  * 
  * Algorithm:
- * 1. Drive straight along current row (full length)
- * 2. Turn 90° perpendicular to the row
- * 3. Drive forward by row spacing distance
- * 4. Turn 90° again to face along the next row (opposite direction)
- * 5. Repeat until all rows are complete
+ * 1. Drive straight forward (creating vertical line)
+ * 2. Turn 90° to the side
+ * 3. Drive forward by column spacing distance
+ * 4. Turn 90° again to face opposite direction (up/down alternates)
+ * 5. Repeat until all columns are complete
  * 
  * Key Features:
- * - Parallel straight rows with consistent spacing
- * - Precise 90° turns only (no diagonal movement)
- * - Alternating row directions (left-to-right, then right-to-left)
- * - Complete area coverage with no gaps or overlaps
- * - Efficient systematic coverage pattern
- * - Similar to how a lawn mower or printer head moves
+ * - Parallel vertical lines with consistent spacing
+ * - Precise 90° turns only
+ * - Alternating directions (up, down, up, down)
+ * - Creates rectangular coverage pattern
+ * - Similar to scanning or covering an area systematically
  */
 void modeSquareZigzag() {
   // Display mode starting
@@ -411,48 +403,41 @@ void modeSquareZigzag() {
   delay(500);
   
   // ========== ADJUSTABLE PARAMETERS ==========
-  // HOW TO CHANGE THE LAWN MOWING PATTERN:
+  // Square zig-zag pattern: Creates vertical parallel lines
+  // Pattern looks like: | | | (three vertical lines side by side)
   
-  int rowLength = 1000;    // Length of each row (in encoder ticks)
-                           // This is the width of the area being covered
+  int columnHeight = 1400;  // Height of each vertical line (in encoder ticks)
+  int columns = 3;          // Number of vertical columns
+  int columnSpacing = 400;  // Distance between columns (in ticks)
+  int speed = 350;          // Motor speed for better accuracy
   
-  int rows = 6;            // Number of parallel rows to drive
-                           // This is the height of the area being covered
-  
-  int rowSpacing = 300;    // Distance between parallel rows (in ticks)
-                           // IMPORTANT: This must be EXACTLY the same for all rows
-                           // to create proper parallel lines
-  
-  int speed = 400;         // Motor speed - reduced for better accuracy
-                           // Lower speed = more accurate turns and distances
-  
-  // Main lawn-mowing loop
-  for (int i = 0; i < rows; i++) {
-    // Drive forward along the current row (full length)
-    driveTicks(rowLength, speed);
+  // Main square zig-zag loop
+  for (int i = 0; i < columns; i++) {
+    // Drive forward (creating vertical line)
+    driveTicks(columnHeight, speed);
+    delay(150);
     
-    // Move to next row (unless this is the last row)
-    if (i < rows - 1) {
-      // Alternate turn direction based on even/odd row
-      // This creates the back-and-forth pattern
+    // Move to next column (unless this is the last column)
+    if (i < columns - 1) {
+      // Alternate turn direction to create zig-zag
       if (i % 2 == 0) {
-        // Even rows: Turn right, move to next row, turn right again
-        // This positions robot for left-to-right on next row
+        // Even columns: Turn right, move to next column, turn right again
+        // This makes robot face downward for next column
         turnRight90();
-        delay(100);  // Small pause for stability
-        driveTicks(rowSpacing, speed);  // Move EXACTLY rowSpacing distance
-        delay(100);  // Small pause for stability
+        delay(150);
+        driveTicks(columnSpacing, speed);
+        delay(150);
         turnRight90();
-        delay(100);  // Small pause before next row
+        delay(150);
       } else {
-        // Odd rows: Turn left, move to next row, turn left again
-        // This positions robot for right-to-left on next row
+        // Odd columns: Turn left, move to next column, turn left again
+        // This makes robot face upward for next column
         turnLeft90();
-        delay(100);  // Small pause for stability
-        driveTicks(rowSpacing, speed);  // Move EXACTLY rowSpacing distance
-        delay(100);  // Small pause for stability
+        delay(150);
+        driveTicks(columnSpacing, speed);
+        delay(150);
         turnLeft90();
-        delay(100);  // Small pause before next row
+        delay(150);
       }
     }
     
