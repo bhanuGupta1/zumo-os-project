@@ -1,7 +1,10 @@
 /*
  * ZumoOS.ino - Main Program Entry Point
+ * 
+ * ========== ASSIGNMENT INFORMATION ==========
  * Author: Bhanu
  * Date: February 27, 2026
+ * Assignment: SBA - Ballistic Behaviors for Autonomous Robot
  * 
  * ========== WHAT THIS FILE DOES ==========
  * This is the MAIN file of the Zumo robot program. It's the entry point
@@ -14,18 +17,21 @@
  * 2. loop() - Runs CONTINUOUSLY forever after setup()
  * 
  * ========== WHAT THIS PROGRAM DOES ==========
- * This program implements 4 ballistic behaviors for autonomous robot movement:
+ * This program implements 5 ballistic behaviors for autonomous robot movement:
  * 
- * 1. SPIRAL - Circular spiral with decreasing radius
- *    Robot starts wide and spirals inward to center point
+ * 1. SPIRAL - Circular spiral with selectable direction (inward/outward)
+ *    Robot creates smooth curved spiral, user chooses direction
  * 
- * 2. ZIG-ZAG - Alternating diagonal movements
+ * 2. SQUARE SPIRAL - Square spiral with 90° turns and selectable direction
+ *    Robot creates square spiral with straight lines and corners
+ * 
+ * 3. ZIG-ZAG - Alternating diagonal movements
  *    Robot creates "Z" or lightning bolt pattern
  * 
- * 3. LAWN MOWER (Square Zig-Zag) - Parallel rows pattern
+ * 4. LAWN MOWER (Square Zig-Zag) - Parallel rows pattern
  *    Robot covers rectangular area like mowing a lawn
  * 
- * 4. CIRCLE - Single continuous circular path
+ * 5. CIRCLE - Single continuous circular path
  *    Robot drives in perfect circle, endpoint meets startpoint
  * 
  * ========== HOW IT WORKS ==========

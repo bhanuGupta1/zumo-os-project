@@ -2,24 +2,29 @@
  * Modes.cpp - Ballistic Behavior Implementations
  * 
  * ========== WHAT THIS FILE DOES ==========
- * This file contains all 4 ballistic behaviors for the SBA assignment:
+ * This file contains all 5 ballistic behaviors for the SBA assignment:
  * 
- * 1. SPIRAL - Circular spiral with decreasing radius
+ * 1. SPIRAL - Circular spiral with selectable direction
  *    - Smooth continuous curve (no corners)
- *    - Starts wide, spirals inward to center
- *    - Like water going down a drain
+ *    - User chooses inward (to center) or outward (from center)
+ *    - Like water going down a drain or spring unwinding
  * 
- * 2. ZIG-ZAG - Diagonal back-and-forth pattern
+ * 2. SQUARE SPIRAL - Square spiral with 90° turns and selectable direction
+ *    - Straight lines with sharp 90° corners
+ *    - User chooses inward or outward
+ *    - Creates square/rectangular spiral pattern
+ * 
+ * 3. ZIG-ZAG - Diagonal back-and-forth pattern
  *    - Straight segments with sharp turns
  *    - Alternates between two angles
  *    - Creates "Z" or lightning bolt shape
  * 
- * 3. SQUARE ZIG-ZAG (LAWN MOWER) - Parallel rows pattern
+ * 4. SQUARE ZIG-ZAG (LAWN MOWER) - Parallel rows pattern
  *    - Straight parallel lines with 90° turns
  *    - Covers rectangular area systematically
  *    - Like mowing a lawn or printer head movement
  * 
- * 4. CIRCLE - Single continuous circular path
+ * 5. CIRCLE - Single continuous circular path
  *    - Constant radius throughout
  *    - Endpoint meets startpoint
  *    - Smooth curve with no corners
@@ -72,6 +77,7 @@
  */
 void runMode(Mode m) {
   switch(m) {
+    case MODE_SPIRAL: modeSpiral(); break;
     case MODE_SQUARE_SPIRAL: modeSquareSpiral(); break;
     case MODE_ZIGZAG: modeZigzag(); break;
     case MODE_SQUARE_ZIGZAG: modeSquareZigzag(); break;
@@ -83,74 +89,192 @@ void runMode(Mode m) {
 // ============ BALLISTIC BEHAVIORS (SBA) ============
 
 /*
- * modeSquareSpiral() - Circular Spiral Pattern Implementation
+ * modeSpiral() - Circular Spiral Pattern Implementation
  * 
  * WHAT IS A SPIRAL?
  * A spiral is a continuous curved path that circles around a center point
  * while gradually moving closer to (or away from) that center. Think of
  * a snail shell or a coiled rope.
  * 
- * Behavior: Robot drives in a circular spiral pattern, starting with a
- * large radius and gradually decreasing the radius until reaching the center.
- * Creates a smooth inward spiral like water going down a drain.
+ * Behavior: Robot drives in a circular spiral pattern with user-selectable direction.
+ * Can spiral inward (to center) or outward (from center).
+ * Creates a smooth spiral like water going down a drain or spring unwinding.
  * 
  * Algorithm:
- * 1. Drive in a circle using differential motor speeds
- * 2. Gradually decrease the speed difference to tighten the radius
- * 3. Continue until radius becomes very small (center reached)
+ * 1. User selects direction: Button A = inward, Button C = outward
+ * 2. Drive in a circle using differential motor speeds
+ * 3. Gradually change the speed difference to change radius
+ * 4. Continue until radius limit reached
  * 
  * Key Features:
  * - Smooth continuous curve (no sharp turns or straight lines)
- * - Radius decreases gradually and continuously
- * - Ends at center point
+ * - Radius changes gradually and continuously
+ * - User-selectable direction (inward or outward)
  * - Creates a true spiral shape (not a square with corners)
  */
-void modeSquareSpiral() {
-  // Display mode name on OLED
+void modeSpiral() {
+  // Display direction selection prompt
   display.clear();
-  display.print("Bhanu");
-  delay(500);
+  display.print("A:In C:Out");
+  display.gotoXY(0, 1);
+  display.print("B:Cancel");
+  
+  // Wait for direction selection
+  bool directionSelected = false;
+  bool inward = true;  // Default to inward
+  
+  while (!directionSelected) {
+    if (buttonA.getSingleDebouncedPress()) {
+      inward = true;
+      directionSelected = true;
+    }
+    if (buttonC.getSingleDebouncedPress()) {
+      inward = false;
+      directionSelected = true;
+    }
+    if (buttonB.getSingleDebouncedPress()) {
+      return;  // Cancel
+    }
+    delay(50);
+  }
+  
+  // Show selected direction
+  display.clear();
+  display.print(inward ? "Inward" : "Outward");
+  delay(1000);
   
   // ========== ADJUSTABLE PARAMETERS ==========
-  // HOW TO CHANGE THE SPIRAL:
-  
   int baseSpeed = 500;           // Base motor speed (0-500)
-                                 // INCREASE = faster spiral (max 500)
-                                 // DECREASE = slower, smoother (try 300-400)
+  int startRadiusDiff = inward ? 250 : 20;  // Start wide for inward, tight for outward
+  int radiusChange = 1;          // How fast radius changes per iteration
+  unsigned long loopDelay = 30;  // Delay between radius adjustments (ms)
+  int minRadius = 10;            // Minimum radius (tightest circle)
+  int maxRadius = 280;           // Maximum radius (widest circle)
   
-  int startRadiusDiff = 250;     // Initial speed difference (controls starting radius)
-                                 // INCREASE = tighter starting circle (try 280-320)
-                                 // DECREASE = wider starting circle (try 180-220)
-  
-  int radiusDecrement = 2;       // How fast radius shrinks per loop iteration
-                                 // INCREASE = faster spiral inward (try 3-5)
-                                 // DECREASE = slower, more gradual spiral (try 1)
-  
-  unsigned long loopDelay = 50;  // Delay between radius adjustments (milliseconds)
-                                 // INCREASE = slower spiral (try 80-100)
-                                 // DECREASE = faster spiral (try 20-40)
-  
-  // Main spiral loop - gradually decrease radius
+  // Main spiral loop
   int currentRadiusDiff = startRadiusDiff;
   
-  while (currentRadiusDiff > 10) {  // Stop when radius becomes very small (center)
+  while (true) {
+    // Check limits
+    if (inward && currentRadiusDiff < minRadius) break;
+    if (!inward && currentRadiusDiff > maxRadius) break;
+    
     // Calculate motor speeds for current radius
     int outerSpeed = baseSpeed;
     int innerSpeed = baseSpeed - currentRadiusDiff;
     
-    // Ensure inner speed doesn't go negative
+    // Ensure inner speed doesn't go negative or too high
     if (innerSpeed < 0) innerSpeed = 0;
+    if (innerSpeed > 500) innerSpeed = 500;
     
     // Set motors to create circular motion
     motors.setSpeeds(outerSpeed, innerSpeed);
     
-    // Gradually decrease radius for spiral effect
-    currentRadiusDiff -= radiusDecrement;
+    // Change radius for spiral effect
+    if (inward) {
+      currentRadiusDiff -= radiusChange;  // Decrease for inward
+    } else {
+      currentRadiusDiff += radiusChange;  // Increase for outward
+    }
     
     // Small delay for smooth spiral
     delay(loopDelay);
     
     // Allow user to stop early
+    if (buttonB.isPressed()) break;
+  }
+  
+  // Ensure motors are stopped
+  stopMotors();
+  
+  // Display completion message
+  display.clear();
+  display.print("Complete!");
+  delay(1000);
+}
+
+/*
+ * modeSquareSpiral() - Square Spiral Pattern with 90° Turns
+ * 
+ * WHAT IS A SQUARE SPIRAL?
+ * A square spiral is a pattern made of straight lines and 90-degree turns,
+ * where each side gets progressively longer (outward) or shorter (inward).
+ * Unlike a circular spiral, this has distinct corners and straight edges.
+ * 
+ * Behavior: Robot drives in straight lines with 90° turns, with user-selectable
+ * direction. Can spiral inward (to center) or outward (from center).
+ * 
+ * Algorithm:
+ * 1. User selects direction: Button A = inward, Button C = outward
+ * 2. Drive straight for current side length
+ * 3. Turn 90 degrees right
+ * 4. Increase or decrease side length
+ * 5. Repeat until limit reached
+ * 
+ * Key Features:
+ * - Straight lines with sharp 90° turns
+ * - Each side length changes by fixed increment
+ * - User-selectable direction (inward or outward)
+ * - Creates square/rectangular spiral pattern
+ */
+void modeSquareSpiral() {
+  // Display direction selection prompt
+  display.clear();
+  display.print("A:In C:Out");
+  display.gotoXY(0, 1);
+  display.print("B:Cancel");
+  
+  // Wait for direction selection
+  bool directionSelected = false;
+  bool inward = true;  // Default to inward
+  
+  while (!directionSelected) {
+    if (buttonA.getSingleDebouncedPress()) {
+      inward = true;
+      directionSelected = true;
+    }
+    if (buttonC.getSingleDebouncedPress()) {
+      inward = false;
+      directionSelected = true;
+    }
+    if (buttonB.getSingleDebouncedPress()) {
+      return;  // Cancel
+    }
+    delay(50);
+  }
+  
+  // Show selected direction
+  display.clear();
+  display.print(inward ? "Inward" : "Outward");
+  delay(1000);
+  
+  // ========== ADJUSTABLE PARAMETERS ==========
+  int sideLength = inward ? 1400 : 200;  // Start large for inward, small for outward
+  int increment = 70;            // How much to change each side
+  int speed = 500;               // Motor speed
+  int minSide = 150;             // Minimum side length
+  int maxSide = 1500;            // Maximum side length
+  
+  // Main square spiral loop
+  while (true) {
+    // Check limits
+    if (inward && sideLength < minSide) break;
+    if (!inward && sideLength > maxSide) break;
+    
+    // Drive straight for current side length
+    driveTicks(sideLength, speed);
+    
+    // Turn 90 degrees right (clockwise)
+    turnRight90();
+    
+    // Change side length for next iteration
+    if (inward) {
+      sideLength -= increment;  // Decrease for inward spiral
+    } else {
+      sideLength += increment;  // Increase for outward spiral
+    }
+    
+    // Allow user to stop the pattern early
     if (buttonB.isPressed()) break;
   }
   
@@ -190,9 +314,9 @@ void modeSquareSpiral() {
  * - Overall pattern moves in one general direction while zigzagging
  */
 void modeZigzag() {
-  // Display mode name
+  // Display mode starting
   display.clear();
-  display.print("Bhanu");
+  display.print("Starting...");
   delay(500);
   
   // ========== ADJUSTABLE PARAMETERS ==========
@@ -279,9 +403,9 @@ void modeZigzag() {
  * - Similar to how a lawn mower or printer head moves
  */
 void modeSquareZigzag() {
-  // Display mode name
+  // Display mode starting
   display.clear();
-  display.print("Bhanu");
+  display.print("Starting...");
   delay(500);
   
   // ========== ADJUSTABLE PARAMETERS ==========
@@ -364,9 +488,9 @@ void modeSquareZigzag() {
  * - No flat sections or irregular shapes
  */
 void modeCircle() {
-  // Display mode name
+  // Display mode starting
   display.clear();
-  display.print("Bhanu");
+  display.print("Starting...");
   delay(500);
   
   // ========== ADJUSTABLE PARAMETERS ==========

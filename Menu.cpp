@@ -21,6 +21,7 @@
  * Array index corresponds to Mode enum values
  */
 static const char* modeNames[] = {
+  "Spiral",       // MODE_SPIRAL
   "Sq Spiral",    // MODE_SQUARE_SPIRAL
   "Zig-Zag",      // MODE_ZIGZAG
   "Sq Zig-Zag",   // MODE_SQUARE_ZIGZAG

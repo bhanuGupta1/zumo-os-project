@@ -49,8 +49,11 @@
  */
 enum Mode {
   // BALLISTIC BEHAVIORS (SBA Assignment)
-  MODE_SQUARE_SPIRAL,   // Circular spiral with decreasing radius
-                        // Starts wide, spirals inward to center
+  MODE_SPIRAL,          // Circular spiral with selectable direction
+                        // User chooses inward (to center) or outward (from center)
+  
+  MODE_SQUARE_SPIRAL,   // Square spiral with 90° turns and selectable direction
+                        // User chooses inward or outward
                         
   MODE_ZIGZAG,          // Alternating diagonal movements
                         // Creates "Z" or lightning bolt pattern
@@ -84,21 +87,44 @@ void runMode(Mode m);
 // Actual implementation is in Modes.cpp
 
 /*
- * modeSquareSpiral() - Circular Spiral Pattern
+ * modeSpiral() - Circular Spiral Pattern
  * 
  * WHAT IT DOES:
- * Robot drives in a smooth circular spiral, starting with a large radius
- * and gradually decreasing the radius until reaching the center point.
+ * Robot drives in a smooth circular spiral with user-selectable direction.
+ * Can spiral inward (to center) or outward (from center).
  * 
  * HOW IT WORKS:
+ * - User selects direction with Button A (inward) or C (outward)
  * - Uses differential motor speeds to create circular motion
- * - Gradually decreases speed difference to tighten the radius
- * - Creates smooth inward spiral (like water down a drain)
+ * - Gradually changes speed difference to change radius
+ * - Creates smooth spiral (like water down a drain or spring unwinding)
  * 
  * ADJUSTABLE PARAMETERS (in Modes.cpp):
  * - baseSpeed: Overall movement speed
  * - startRadiusDiff: Initial circle size
- * - radiusDecrement: How fast it spirals inward
+ * - radiusChange: How fast radius changes
+ */
+void modeSpiral();
+
+/*
+ * modeSquareSpiral() - Square Spiral Pattern with 90° Turns
+ * 
+ * WHAT IT DOES:
+ * Robot drives in a square spiral with user-selectable direction.
+ * Can spiral inward (to center) or outward (from center).
+ * Uses straight lines and 90° turns (not smooth curves).
+ * 
+ * HOW IT WORKS:
+ * - User selects direction with Button A (inward) or C (outward)
+ * - Drive straight for current side length
+ * - Turn 90 degrees
+ * - Increase or decrease side length
+ * - Repeat to create square spiral
+ * 
+ * ADJUSTABLE PARAMETERS (in Modes.cpp):
+ * - sideLength: Starting side length
+ * - increment: How much to change each side
+ * - speed: Movement speed
  */
 void modeSquareSpiral();
 
