@@ -108,7 +108,7 @@
 // ============ TURN SPEED ============
 // Speed used for turning operations
 
-#define MAZE_TURN_SPEED 250
+#define TURN_SPEED 250
 // Speed when turning (used by turnRight90, turnLeft90, turn180)
 // Medium speed for accurate turns
 // Adjust if turns are not precise

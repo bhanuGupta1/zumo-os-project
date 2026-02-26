@@ -509,7 +509,7 @@ void turnRight90() {
   
   // Loop until turn complete
   while (abs(encoders.getCountsLeft()) < TURN_90_TICKS) {
-    motors.setSpeeds(MAZE_TURN_SPEED, -MAZE_TURN_SPEED);  // Spin right
+    motors.setSpeeds(TURN_SPEED, -TURN_SPEED);  // Spin right
     if (buttonB.isPressed()) break;             // Allow early exit
   }
   
@@ -537,7 +537,7 @@ void turnLeft90() {
   
   // Loop until turn complete
   while (abs(encoders.getCountsLeft()) < TURN_90_TICKS) {
-    motors.setSpeeds(-MAZE_TURN_SPEED, MAZE_TURN_SPEED);  // Spin left
+    motors.setSpeeds(-TURN_SPEED, TURN_SPEED);  // Spin left
     if (buttonB.isPressed()) break;             // Allow early exit
   }
   
@@ -556,7 +556,6 @@ void turnLeft90() {
  * 
  * WHEN TO USE:
  * - Reversing direction
- * - Maze solving (dead end)
  * - Any time you need to turn around
  */
 void turn180() {
@@ -564,7 +563,7 @@ void turn180() {
   
   // Loop until turn complete
   while (abs(encoders.getCountsLeft()) < TURN_180_TICKS) {
-    motors.setSpeeds(MAZE_TURN_SPEED, -MAZE_TURN_SPEED);  // Spin right
+    motors.setSpeeds(TURN_SPEED, -TURN_SPEED);  // Spin right
     if (buttonB.isPressed()) break;             // Allow early exit
   }
   
