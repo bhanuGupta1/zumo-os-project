@@ -1,0 +1,807 @@
+================================================================================
+ZUMO ROBOT - BALLISTIC BEHAVIOURS CODE SUBMISSION
+Student: Bhanu
+Date: February 27, 2026
+Assignment: SBA - Ballistic Behaviors for Autonomous Robot
+================================================================================
+
+This document contains all the code files for the Zumo Robot Ballistic Behaviours project.
+Copy and paste this into your assignment document as instructed.
+
+================================================================================
+FILE 1: ZumoOS.ino - Main Program Entry Point
+================================================================================
+
+/*
+ * ZumoOS.ino - Main Program Entry Point
+ * 
+ * ========== ASSIGNMENT INFORMATION ==========
+ * Author: Bhanu
+ * Date: February 27, 2026
+ * Assignment: SBA - Ballistic Behaviors for Autonomous Robot
+ * 
+ * ========== WHAT THIS FILE DOES ==========
+ * This is the MAIN file of the Zumo robot program. It's the entry point
+ * that Arduino runs when the robot powers on. This file coordinates all
+ * other components of the system.
+ * 
+ * ========== PROGRAM STRUCTURE ==========
+ * Arduino programs have two required functions:
+ * 1. setup() - Runs ONCE when robot powers on
+ * 2. loop() - Runs CONTINUOUSLY forever after setup()
+ * 
+ * ========== WHAT THIS PROGRAM DOES ==========
+ * This program implements 5 ballistic behaviors for autonomous robot movement:
+ * 
+ * ASSIGNMENT REQUIRED (4):
+ * 1. SQUARE SPIRAL - Square spiral with 90° turns (inward/outward)
+ * 2. ZIG-ZAG - Alternating diagonal movements
+ * 3. SQUARE ZIG-ZAG - Parallel vertical lines pattern
+ * 4. CIRCLE - Single continuous circular path
+ * 
+ * ADDITIONAL (for comparison):
+ * 5. SPIRAL - Circular spiral (NOT in assignment, for comparison only)
+ */
+
+#include "Hardware.h"  // Hardware initialization and motor control functions
+#include "Menu.h"      // User interface for mode selection
+#include "Modes.h"     // Ballistic behavior implementations
+#include "Config.h"    // Configuration constants (speeds, timings, etc.)
+
+void setup() {
+  Serial.begin(9600);        // Initialize serial communication at 9600 baud
+  initializeHardware();      // Initialize motors, sensors, display, and IMU
+  playStartupSound();        // Play a sound to indicate successful startup
+  delay(500);                // Brief pause for system stabilization
+}
+
+void loop() {
+  Mode selectedMode = selectMode();  // Show menu and get user's mode choice
+  runMode(selectedMode);             // Execute the selected ballistic behavior
+  
+  display.clear();                   // Clear the OLED display
+  display.print("Mode Done!");       // Show completion message
+  delay(1000);                       // Wait 1 second so user can see message
+}
+
+
+================================================================================
+FILE 2: Config.h - Configuration Constants
+================================================================================
+
+/*
+ * Config.h - Configuration Constants
+ * 
+ * This file contains all tunable parameters and constants for the robot.
+ */
+
+#pragma once
+
+// ============ MOTOR SPEEDS ============
+#define ENCODER_SPEED 250
+// Speed for encoder-based movement
+// Used in ballistic behaviors for straight lines
+
+// ============ TIMING ============
+#define MENU_TIMEOUT_MS 10000
+// Menu auto-timeout (10 seconds)
+
+#define BUTTON_DEBOUNCE_MS 50
+// Button debounce delay (50 milliseconds)
+
+// ============ ENCODER CONSTANTS ============
+// NOTE: Values DOUBLED from original 320/640 because physical turns
+// were measuring less than 90 degrees. Adjust based on testing.
+
+#define TURN_90_TICKS 640
+// Encoder ticks for 90-degree turn (DOUBLED for testing)
+// Original value was 320, doubled to 640
+
+#define TURN_180_TICKS 1280
+// Encoder ticks for 180-degree turn (DOUBLED for testing)
+// Original value was 640, doubled to 1280
+
+#define SQUARE_SIDE_TICKS 900
+// Encoder ticks for square side length
+
+// ============ TURN SPEED ============
+#define TURN_SPEED 250
+// Speed when turning (used by turnRight90, turnLeft90, turn180)
+
+// ============ CALIBRATION ============
+#define CALIBRATION_SPINS 80
+// Number of calibration readings to take
+
+#define CALIBRATION_DELAY_MS 20
+// Delay between calibration readings
+
+
+================================================================================
+FILE 3: Modes.h - Mode Definitions
+================================================================================
+
+/*
+ * Modes.h - Ballistic Behavior Mode Definitions
+ */
+
+#pragma once
+
+enum Mode {
+  MODE_SPIRAL,          // Circular spiral (NOT in assignment - for comparison)
+  MODE_SQUARE_SPIRAL,   // Square spiral with 90° turns (REQUIRED)
+  MODE_ZIGZAG,          // Alternating diagonal movements (REQUIRED)
+  MODE_SQUARE_ZIGZAG,   // Parallel vertical lines (REQUIRED)
+  MODE_CIRCLE,          // Continuous circular path (REQUIRED)
+  MODE_COUNT            // Total number of modes
+};
+
+void runMode(Mode m);
+
+// Ballistic behavior function declarations
+void modeSpiral();
+void modeSquareSpiral();
+void modeZigzag();
+void modeSquareZigzag();
+void modeCircle();
+
+
+================================================================================
+FILE 4: Modes.cpp - Ballistic Behavior Implementations
+================================================================================
+
+#include "Modes.h"
+#include "Hardware.h"
+#include "Config.h"
+#include "Utils.h"
+
+void runMode(Mode m) {
+  switch(m) {
+    case MODE_SPIRAL: modeSpiral(); break;
+    case MODE_SQUARE_SPIRAL: modeSquareSpiral(); break;
+    case MODE_ZIGZAG: modeZigzag(); break;
+    case MODE_SQUARE_ZIGZAG: modeSquareZigzag(); break;
+    case MODE_CIRCLE: modeCircle(); break;
+    default: break;
+  }
+}
+
+// ============ SPIRAL (NOT IN ASSIGNMENT - FOR COMPARISON) ============
+void modeSpiral() {
+  display.clear();
+  display.print("A:In C:Out");
+  display.gotoXY(0, 1);
+  display.print("B:Cancel");
+  
+  bool directionSelected = false;
+  bool inward = true;
+  
+  while (!directionSelected) {
+    if (buttonA.getSingleDebouncedPress()) {
+      inward = true;
+      directionSelected = true;
+    }
+    if (buttonC.getSingleDebouncedPress()) {
+      inward = false;
+      directionSelected = true;
+    }
+    if (buttonB.getSingleDebouncedPress()) {
+      return;
+    }
+    delay(50);
+  }
+  
+  display.clear();
+  display.print(inward ? "Inward" : "Outward");
+  delay(1000);
+  
+  int outerSpeed = 400;
+  int startInnerSpeed = inward ? 350 : 100;
+  int endInnerSpeed = inward ? 100 : 350;
+  float speedChangeRate = inward ? -0.5 : 0.5;
+  unsigned long loopDelay = 30;
+  
+  float currentInnerSpeed = startInnerSpeed;
+  
+  while (true) {
+    if (inward && currentInnerSpeed <= endInnerSpeed) break;
+    if (!inward && currentInnerSpeed >= endInnerSpeed) break;
+    
+    int innerSpeed = (int)currentInnerSpeed;
+    if (innerSpeed < 50) innerSpeed = 50;
+    if (innerSpeed > 500) innerSpeed = 500;
+    
+    motors.setSpeeds(innerSpeed, outerSpeed);
+    currentInnerSpeed += speedChangeRate;
+    delay(loopDelay);
+    
+    if (buttonB.isPressed()) break;
+  }
+  
+  stopMotors();
+  display.clear();
+  display.print("Complete!");
+  delay(1000);
+}
+
+// ============ SQUARE SPIRAL (REQUIRED) ============
+void modeSquareSpiral() {
+  display.clear();
+  display.print("A:In C:Out");
+  display.gotoXY(0, 1);
+  display.print("B:Cancel");
+  
+  bool directionSelected = false;
+  bool inward = true;
+  
+  while (!directionSelected) {
+    if (buttonA.getSingleDebouncedPress()) {
+      inward = true;
+      directionSelected = true;
+    }
+    if (buttonC.getSingleDebouncedPress()) {
+      inward = false;
+      directionSelected = true;
+    }
+    if (buttonB.getSingleDebouncedPress()) {
+      return;
+    }
+    delay(50);
+  }
+  
+  display.clear();
+  display.print(inward ? "Inward" : "Outward");
+  delay(1000);
+  
+  int sideLength = inward ? 1400 : 200;
+  int increment = 70;
+  int speed = 500;
+  int minSide = 150;
+  int maxSide = 1500;
+  
+  while (true) {
+    if (inward && sideLength < minSide) break;
+    if (!inward && sideLength > maxSide) break;
+    
+    driveTicks(sideLength, speed);
+    turnRight90();
+    
+    if (inward) {
+      sideLength -= increment;
+    } else {
+      sideLength += increment;
+    }
+    
+    if (buttonB.isPressed()) break;
+  }
+  
+  stopMotors();
+  display.clear();
+  display.print("Complete!");
+  delay(1000);
+}
+
+// ============ ZIG-ZAG (REQUIRED) ============
+void modeZigzag() {
+  display.clear();
+  display.print("Starting...");
+  delay(500);
+  
+  int segmentLength = 900;
+  int zigzags = 6;
+  int speed = 400;
+  int turnAngleTicks = 480;
+  
+  for (int i = 0; i < zigzags; i++) {
+    driveTicks(segmentLength, speed);
+    delay(100);
+    
+    if (i % 2 == 0) {
+      resetEncoders();
+      while (abs(encoders.getCountsLeft()) < turnAngleTicks) {
+        motors.setSpeeds(400, -400);
+        if (buttonB.isPressed()) break;
+      }
+      motors.setSpeeds(0, 0);
+      delay(100);
+    } else {
+      resetEncoders();
+      while (abs(encoders.getCountsLeft()) < turnAngleTicks * 2) {
+        motors.setSpeeds(-400, 400);
+        if (buttonB.isPressed()) break;
+      }
+      motors.setSpeeds(0, 0);
+      delay(100);
+    }
+    
+    if (buttonB.isPressed()) break;
+  }
+  
+  stopMotors();
+  display.clear();
+  display.print("Complete!");
+  delay(1000);
+}
+
+// ============ SQUARE ZIG-ZAG (REQUIRED) ============
+void modeSquareZigzag() {
+  display.clear();
+  display.print("Starting...");
+  delay(500);
+  
+  int columnHeight = 1400;
+  int columns = 3;
+  int columnSpacing = 400;
+  int speed = 350;
+  
+  for (int i = 0; i < columns; i++) {
+    driveTicks(columnHeight, speed);
+    delay(150);
+    
+    if (i < columns - 1) {
+      if (i % 2 == 0) {
+        turnRight90();
+        delay(150);
+        driveTicks(columnSpacing, speed);
+        delay(150);
+        turnRight90();
+        delay(150);
+      } else {
+        turnLeft90();
+        delay(150);
+        driveTicks(columnSpacing, speed);
+        delay(150);
+        turnLeft90();
+        delay(150);
+      }
+    }
+    
+    if (buttonB.isPressed()) break;
+  }
+  
+  stopMotors();
+  display.clear();
+  display.print("Complete!");
+  delay(1000);
+}
+
+// ============ CIRCLE (REQUIRED) ============
+void modeCircle() {
+  display.clear();
+  display.print("Starting...");
+  delay(500);
+  
+  int outerSpeed = 450;
+  int innerSpeed = 250;
+  unsigned long circleDuration = 7000;
+  unsigned long startTime = millis();
+  
+  while (millis() - startTime < circleDuration) {
+    motors.setSpeeds(outerSpeed, innerSpeed);
+    if (buttonB.isPressed()) break;
+  }
+  
+  stopMotors();
+  display.clear();
+  display.print("Complete!");
+  delay(1000);
+}
+
+
+================================================================================
+FILE 5: Hardware.h - Hardware Interface Declarations
+================================================================================
+
+#pragma once
+
+#include <Wire.h>
+#include <Zumo32U4.h>
+
+extern Zumo32U4Motors motors;
+extern Zumo32U4Encoders encoders;
+extern Zumo32U4LineSensors lineSensors;
+extern Zumo32U4ProximitySensors prox;
+extern Zumo32U4OLED display;
+extern Zumo32U4Buzzer buzzer;
+extern Zumo32U4ButtonA buttonA;
+extern Zumo32U4ButtonB buttonB;
+extern Zumo32U4ButtonC buttonC;
+extern Zumo32U4IMU imu;
+
+extern unsigned int lineValues[5];
+extern int lastError;
+
+void initializeHardware();
+void playStartupSound();
+void playModeChangeSound();
+void playErrorSound();
+void playSuccessSound();
+
+int clampSpeed(int speed);
+void stopMotors();
+void setMotorSpeeds(int left, int right);
+
+
+================================================================================
+FILE 6: Hardware.cpp - Hardware Implementation
+================================================================================
+
+#include "Hardware.h"
+#include "Config.h"
+
+Zumo32U4Motors motors;
+Zumo32U4Encoders encoders;
+Zumo32U4LineSensors lineSensors;
+Zumo32U4ProximitySensors prox;
+Zumo32U4OLED display;
+Zumo32U4Buzzer buzzer;
+Zumo32U4ButtonA buttonA;
+Zumo32U4ButtonB buttonB;
+Zumo32U4ButtonC buttonC;
+Zumo32U4IMU imu;
+
+unsigned int lineValues[5];
+int lastError = 0;
+
+void initializeHardware() {
+  display.clear();
+  display.print("ZumoOS Pro");
+  display.gotoXY(0, 1);
+  display.print("Initializing");
+  
+  Wire.begin();
+  
+  if (imu.init()) {
+    imu.enableDefault();
+  }
+  
+  delay(1000);
+  display.clear();
+}
+
+void playStartupSound() {
+  buzzer.play("c32 e32 g32 c64");
+}
+
+void playModeChangeSound() {
+  buzzer.play("g32 c32");
+}
+
+void playErrorSound() {
+  buzzer.play("c16 c16 c16");
+}
+
+void playSuccessSound() {
+  buzzer.play("g32 a32 b32 c64");
+}
+
+int clampSpeed(int speed) {
+  return speed;
+}
+
+void stopMotors() {
+  motors.setSpeeds(0, 0);
+}
+
+void setMotorSpeeds(int left, int right) {
+  motors.setSpeeds(left, right);
+}
+
+
+================================================================================
+FILE 7: Utils.h - Utility Function Declarations
+================================================================================
+
+#pragma once
+#include <Arduino.h>
+
+void waitForButtonPress();
+void calibrateLineSensors();
+void calibrateProximitySensors();
+void showSensorReadings();
+void performSystemCheck();
+
+int mapRange(int value, int fromLow, int fromHigh, int toLow, int toHigh);
+float constrainFloat(float value, float min, float max);
+
+bool isTimeoutReached(unsigned long startTime, unsigned long timeoutMs);
+void delayWithButtonCheck(unsigned long delayMs);
+
+void resetEncoders();
+void driveDistance(int distance, int speed);
+void turnAngle(int angle, int speed);
+void driveTicks(int ticks, int speed);
+void turnRight90();
+void turnLeft90();
+void turn180();
+
+
+================================================================================
+FILE 8: Utils.cpp - Utility Functions Implementation
+================================================================================
+
+#include "Utils.h"
+#include "Hardware.h"
+#include "Config.h"
+
+void waitForButtonPress() {
+  display.gotoXY(0, 3);
+  display.print("Press any btn");
+  
+  while (!buttonA.isPressed() && !buttonB.isPressed() && !buttonC.isPressed()) {
+    delay(10);
+  }
+  
+  while (buttonA.isPressed() || buttonB.isPressed() || buttonC.isPressed()) {
+    delay(10);
+  }
+}
+
+void calibrateLineSensors() {
+  display.clear();
+  display.print("Calibrating");
+  display.gotoXY(0, 1);
+  display.print("Line Sensors");
+  
+  lineSensors.initFiveSensors();
+  motors.setSpeeds(150, -150);
+  
+  for (int i = 0; i < CALIBRATION_SPINS; i++) {
+    lineSensors.calibrate();
+    delay(CALIBRATION_DELAY_MS);
+  }
+  
+  motors.setSpeeds(0, 0);
+  display.gotoXY(0, 2);
+  display.print("Complete!");
+  playSuccessSound();
+  delay(500);
+}
+
+void calibrateProximitySensors() {
+  display.clear();
+  display.print("Calibrating");
+  display.gotoXY(0, 1);
+  display.print("Prox Sensors");
+  
+  prox.initThreeSensors();
+  
+  display.gotoXY(0, 2);
+  display.print("Complete!");
+  playSuccessSound();
+  delay(500);
+}
+
+void showSensorReadings() {
+  lineSensors.read(lineValues);
+  prox.read();
+  
+  display.clear();
+  display.print("L:");
+  display.print(lineValues[0]);
+  display.print(" ");
+  display.print(lineValues[1]);
+  
+  display.gotoXY(0, 1);
+  display.print("M:");
+  display.print(lineValues[2]);
+  
+  display.gotoXY(0, 2);
+  display.print("R:");
+  display.print(lineValues[3]);
+  display.print(" ");
+  display.print(lineValues[4]);
+  
+  display.gotoXY(0, 3);
+  display.print("P:");
+  display.print(prox.countsLeftWithLeftLeds());
+  display.print(" ");
+  display.print(prox.countsFrontWithLeftLeds());
+  display.print(" ");
+  display.print(prox.countsRightWithRightLeds());
+}
+
+void performSystemCheck() {
+  display.clear();
+  display.print("System Check");
+  
+  display.gotoXY(0, 1);
+  display.print("Motors...");
+  motors.setSpeeds(100, 100);
+  delay(500);
+  
+  motors.setSpeeds(-100, -100);
+  delay(500);
+  
+  motors.setSpeeds(0, 0);
+  
+  display.gotoXY(0, 2);
+  display.print("Buzzer...");
+  buzzer.play("c32");
+  delay(500);
+  
+  display.gotoXY(0, 3);
+  display.print("Complete!");
+  playSuccessSound();
+  delay(1000);
+}
+
+int mapRange(int value, int fromLow, int fromHigh, int toLow, int toHigh) {
+  return (value - fromLow) * (toHigh - toLow) / (fromHigh - fromLow) + toLow;
+}
+
+float constrainFloat(float value, float min, float max) {
+  if (value < min) return min;
+  if (value > max) return max;
+  return value;
+}
+
+bool isTimeoutReached(unsigned long startTime, unsigned long timeoutMs) {
+  return (millis() - startTime) > timeoutMs;
+}
+
+void delayWithButtonCheck(unsigned long delayMs) {
+  unsigned long startTime = millis();
+  
+  while (!isTimeoutReached(startTime, delayMs)) {
+    if (buttonB.isPressed()) break;
+    delay(10);
+  }
+}
+
+void resetEncoders() {
+  encoders.getCountsAndResetLeft();
+  encoders.getCountsAndResetRight();
+}
+
+void driveTicks(int ticks, int speed) {
+  resetEncoders();
+  
+  while (encoders.getCountsLeft() < ticks && encoders.getCountsRight() < ticks) {
+    motors.setSpeeds(speed, speed);
+    if (buttonB.isPressed()) break;
+  }
+  
+  motors.setSpeeds(0, 0);
+  delay(200);
+}
+
+void turnRight90() {
+  resetEncoders();
+  
+  while (abs(encoders.getCountsLeft()) < TURN_90_TICKS) {
+    motors.setSpeeds(TURN_SPEED, -TURN_SPEED);
+    if (buttonB.isPressed()) break;
+  }
+  
+  motors.setSpeeds(0, 0);
+  delay(200);
+}
+
+void turnLeft90() {
+  resetEncoders();
+  
+  while (abs(encoders.getCountsLeft()) < TURN_90_TICKS) {
+    motors.setSpeeds(-TURN_SPEED, TURN_SPEED);
+    if (buttonB.isPressed()) break;
+  }
+  
+  motors.setSpeeds(0, 0);
+  delay(200);
+}
+
+void turn180() {
+  resetEncoders();
+  
+  while (abs(encoders.getCountsLeft()) < TURN_180_TICKS) {
+    motors.setSpeeds(TURN_SPEED, -TURN_SPEED);
+    if (buttonB.isPressed()) break;
+  }
+  
+  motors.setSpeeds(0, 0);
+  delay(200);
+}
+
+
+================================================================================
+FILE 9: Menu.h - Menu System Declarations
+================================================================================
+
+#pragma once
+#include "Modes.h"
+
+const char* getModeName(Mode mode);
+void showMenu();
+Mode selectMode();
+void displayModeInfo(Mode mode);
+
+
+================================================================================
+FILE 10: Menu.cpp - Menu System Implementation
+================================================================================
+
+#include "Menu.h"
+#include "Hardware.h"
+#include "Config.h"
+
+static const char* modeNames[] = {
+  "Spiral",
+  "Sq Spiral",
+  "Zig-Zag",
+  "Sq Zig-Zag",
+  "Circle"
+};
+
+const char* getModeName(Mode mode) {
+  if (mode >= 0 && mode < MODE_COUNT) {
+    return modeNames[mode];
+  }
+  return "Unknown";
+}
+
+void showMenu() {
+  display.clear();
+  display.print("A/C:Chg B:Run");
+}
+
+Mode selectMode() {
+  static Mode currentMode = MODE_SQUARE_SPIRAL;
+  
+  showMenu();
+  
+  display.gotoXY(0, 1);
+  display.print(getModeName(currentMode));
+  delay(100);
+  
+  Mode lastDisplayedMode = currentMode;
+  
+  while (true) {
+    if (currentMode != lastDisplayedMode) {
+      display.gotoXY(0, 1);
+      display.print("                ");
+      display.gotoXY(0, 1);
+      display.print(getModeName(currentMode));
+      lastDisplayedMode = currentMode;
+    }
+    
+    if (buttonA.getSingleDebouncedPress()) {
+      currentMode = (Mode)((currentMode + 1) % MODE_COUNT);
+      playModeChangeSound();
+    }
+    
+    if (buttonC.getSingleDebouncedPress()) {
+      currentMode = (Mode)((currentMode - 1 + MODE_COUNT) % MODE_COUNT);
+      playModeChangeSound();
+    }
+    
+    if (buttonB.getSingleDebouncedPress()) {
+      displayModeInfo(currentMode);
+      return currentMode;
+    }
+    
+    delay(50);
+  }
+}
+
+void displayModeInfo(Mode mode) {
+  display.clear();
+  display.print("Starting:");
+  display.gotoXY(0, 1);
+  display.print(getModeName(mode));
+  display.gotoXY(0, 2);
+  display.print("Press B=Stop");
+  delay(1000);
+}
+
+
+================================================================================
+END OF CODE SUBMISSION
+================================================================================
+
+INSTRUCTIONS FOR ADDING TO WORD DOCUMENT:
+1. Open your "Automation and Robotics - Ballistic Behaviours SBA B1 2026 - V2.docx" file
+2. Scroll to the end of the document
+3. Add a new section titled "APPENDIX: SOURCE CODE"
+4. Copy and paste this entire text file into that section
+5. Format as needed (you may want to use a monospace font like Courier New for code)
+
+GitHub Repository: https://github.com/bhanuGupta1/zumo-os-project
