@@ -89,6 +89,8 @@ void runMode(Mode m);
 /*
  * modeSpiral() - Circular Spiral Pattern
  * 
+ * NOTE: NOT part of assignment - included for comparison with Square Spiral
+ * 
  * WHAT IT DOES:
  * Robot drives in a smooth circular spiral with user-selectable direction.
  * Can spiral inward (to center) or outward (from center).
@@ -100,9 +102,9 @@ void runMode(Mode m);
  * - Creates smooth spiral (like water down a drain or spring unwinding)
  * 
  * ADJUSTABLE PARAMETERS (in Modes.cpp):
- * - baseSpeed: Overall movement speed
- * - startRadiusDiff: Initial circle size
- * - radiusChange: How fast radius changes
+ * - outerSpeed: Overall movement speed
+ * - startInnerSpeed/endInnerSpeed: Initial and final inner wheel speeds
+ * - speedChangeRate: How fast radius changes
  */
 void modeSpiral();
 

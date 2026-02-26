@@ -4,30 +4,32 @@
  * ========== WHAT THIS FILE DOES ==========
  * This file contains all 5 ballistic behaviors for the SBA assignment:
  * 
- * 1. SPIRAL - Circular spiral with selectable direction
- *    - Smooth continuous curve (no corners)
- *    - User chooses inward (to center) or outward (from center)
- *    - Like water going down a drain or spring unwinding
- * 
- * 2. SQUARE SPIRAL - Square spiral with 90° turns and selectable direction
+ * ASSIGNMENT REQUIRED MODES (4):
+ * 1. SQUARE SPIRAL - Square spiral with 90° turns and selectable direction
  *    - Straight lines with sharp 90° corners
  *    - User chooses inward or outward
  *    - Creates square/rectangular spiral pattern
  * 
- * 3. ZIG-ZAG - Diagonal back-and-forth pattern
+ * 2. ZIG-ZAG - Diagonal back-and-forth pattern
  *    - Straight segments with sharp turns
  *    - Alternates between two angles
  *    - Creates "Z" or lightning bolt shape
  * 
- * 4. SQUARE ZIG-ZAG (LAWN MOWER) - Parallel rows pattern
+ * 3. SQUARE ZIG-ZAG - Vertical parallel lines pattern
  *    - Straight parallel lines with 90° turns
  *    - Covers rectangular area systematically
- *    - Like mowing a lawn or printer head movement
+ *    - Creates vertical columns: | | |
  * 
- * 5. CIRCLE - Single continuous circular path
+ * 4. CIRCLE - Single continuous circular path
  *    - Constant radius throughout
  *    - Endpoint meets startpoint
  *    - Smooth curve with no corners
+ * 
+ * ADDITIONAL MODE (for comparison):
+ * 5. SPIRAL - Circular spiral with selectable direction (NOT in assignment)
+ *    - Smooth continuous curve (no corners)
+ *    - User chooses inward (to center) or outward (from center)
+ *    - Included to demonstrate difference from square spiral
  * 
  * ========== HOW TO ADJUST BEHAVIORS ==========
  * Each mode has an "ADJUSTABLE PARAMETERS" section at the top.
@@ -39,13 +41,13 @@
  * - Higher = faster, Lower = more controlled
  * 
  * SIZE/DISTANCE:
- * - Change "segmentLength", "rowLength", "startRadiusDiff" variables
+ * - Change "segmentLength", "rowLength", "columnHeight" variables
  * - Measured in encoder ticks (roughly 1 tick = 0.1mm)
  * - Higher = larger pattern, Lower = smaller pattern
  * 
  * ANGLES:
  * - For zig-zag: adjust "turnAngleTicks" value
- * - For lawn mower: uses turnRight90() and turnLeft90() (fixed 90°)
+ * - For square patterns: uses turnRight90() and turnLeft90() (fixed 90°)
  * - Higher ticks = sharper turn, Lower ticks = gentler turn
  * 
  * CIRCLE/SPIRAL DIAMETER:
@@ -91,6 +93,10 @@ void runMode(Mode m) {
 /*
  * modeSpiral() - Circular Spiral Pattern Implementation
  * 
+ * NOTE: This mode is NOT part of the assignment requirements.
+ * It is implemented for comparison purposes to demonstrate the difference
+ * between a smooth circular spiral and the required square spiral pattern.
+ * 
  * WHAT IS A SPIRAL?
  * A spiral is a continuous curved path that circles around a center point
  * while gradually moving closer to (or away from) that center. Think of
@@ -111,6 +117,10 @@ void runMode(Mode m) {
  * - Radius changes gradually and continuously
  * - User-selectable direction (inward or outward)
  * - Creates a true spiral shape (not a square with corners)
+ * 
+ * COMPARISON WITH SQUARE SPIRAL:
+ * - Circular Spiral: Smooth curves, no corners, continuous radius change
+ * - Square Spiral: Straight lines, 90° corners, discrete side length changes
  */
 void modeSpiral() {
   // Display direction selection prompt
