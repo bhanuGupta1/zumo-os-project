@@ -108,7 +108,7 @@ void runMode(Mode m) {
 void modeSquareSpiral() {
   // Display mode name on OLED
   display.clear();
-  display.print("LUDICROUS!");
+  display.print("Bhanu");
   delay(500);
   
   // ========== ADJUSTABLE PARAMETERS ==========
@@ -192,7 +192,7 @@ void modeSquareSpiral() {
 void modeZigzag() {
   // Display mode name
   display.clear();
-  display.print("LUDICROUS!");
+  display.print("Bhanu");
   delay(500);
   
   // ========== ADJUSTABLE PARAMETERS ==========
@@ -281,7 +281,7 @@ void modeZigzag() {
 void modeSquareZigzag() {
   // Display mode name
   display.clear();
-  display.print("LUDICROUS!");
+  display.print("Bhanu");
   delay(500);
   
   // ========== ADJUSTABLE PARAMETERS ==========
@@ -366,7 +366,7 @@ void modeSquareZigzag() {
 void modeCircle() {
   // Display mode name
   display.clear();
-  display.print("LUDICROUS!");
+  display.print("Bhanu");
   delay(500);
   
   // ========== ADJUSTABLE PARAMETERS ==========
