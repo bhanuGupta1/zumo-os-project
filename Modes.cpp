@@ -144,12 +144,13 @@ void modeSpiral() {
   delay(1000);
   
   // ========== ADJUSTABLE PARAMETERS ==========
-  int baseSpeed = 500;           // Base motor speed (0-500)
-  int startRadiusDiff = inward ? 250 : 20;  // Start wide for inward, tight for outward
-  int radiusChange = 1;          // How fast radius changes per iteration
-  unsigned long loopDelay = 30;  // Delay between radius adjustments (ms)
+  // Smaller diameter, smoother spiral
+  int baseSpeed = 400;           // Base motor speed - reduced for better control
+  int startRadiusDiff = inward ? 180 : 15;  // Smaller starting radius
+  int radiusChange = 1;          // Slow gradual change
+  unsigned long loopDelay = 40;  // Slightly longer delay for smoother spiral
   int minRadius = 10;            // Minimum radius (tightest circle)
-  int maxRadius = 280;           // Maximum radius (widest circle)
+  int maxRadius = 200;           // Smaller maximum radius for tighter spiral
   
   // Main spiral loop
   int currentRadiusDiff = startRadiusDiff;
@@ -160,11 +161,12 @@ void modeSpiral() {
     if (!inward && currentRadiusDiff > maxRadius) break;
     
     // Calculate motor speeds for current radius
+    // Both wheels move forward, but at different speeds to create curve
     int outerSpeed = baseSpeed;
     int innerSpeed = baseSpeed - currentRadiusDiff;
     
-    // Ensure inner speed doesn't go negative or too high
-    if (innerSpeed < 0) innerSpeed = 0;
+    // Ensure inner speed stays positive and reasonable
+    if (innerSpeed < 50) innerSpeed = 50;  // Keep minimum forward motion
     if (innerSpeed > 500) innerSpeed = 500;
     
     // Set motors to create circular motion
@@ -412,23 +414,17 @@ void modeSquareZigzag() {
   // HOW TO CHANGE THE LAWN MOWING PATTERN:
   
   int rowLength = 1000;    // Length of each row (in encoder ticks)
-                           // INCREASE = longer rows, wider area (try 1200-1500)
-                           // DECREASE = shorter rows, narrower area (try 700-900)
-                           // NOTE: This is the width of the area being covered
+                           // This is the width of the area being covered
   
   int rows = 6;            // Number of parallel rows to drive
-                           // INCREASE = more rows, taller area (try 8-10)
-                           // DECREASE = fewer rows, smaller area (try 4-5)
-                           // NOTE: This is the height of the area being covered
+                           // This is the height of the area being covered
   
-  int rowSpacing = 250;    // Distance between parallel rows (in ticks)
-                           // INCREASE = wider spacing, less overlap (try 300-400)
-                           // DECREASE = tighter spacing, more coverage (try 150-200)
-                           // NOTE: Should match robot width for complete coverage
+  int rowSpacing = 300;    // Distance between parallel rows (in ticks)
+                           // IMPORTANT: This must be EXACTLY the same for all rows
+                           // to create proper parallel lines
   
-  int speed = 500;         // Motor speed (0-500, safe limit is 400)
-                           // INCREASE = faster movement (max 500)
-                           // DECREASE = slower, more controlled (try 300-400)
+  int speed = 400;         // Motor speed - reduced for better accuracy
+                           // Lower speed = more accurate turns and distances
   
   // Main lawn-mowing loop
   for (int i = 0; i < rows; i++) {
@@ -443,14 +439,20 @@ void modeSquareZigzag() {
         // Even rows: Turn right, move to next row, turn right again
         // This positions robot for left-to-right on next row
         turnRight90();
-        driveTicks(rowSpacing, speed);
+        delay(100);  // Small pause for stability
+        driveTicks(rowSpacing, speed);  // Move EXACTLY rowSpacing distance
+        delay(100);  // Small pause for stability
         turnRight90();
+        delay(100);  // Small pause before next row
       } else {
         // Odd rows: Turn left, move to next row, turn left again
         // This positions robot for right-to-left on next row
         turnLeft90();
-        driveTicks(rowSpacing, speed);
+        delay(100);  // Small pause for stability
+        driveTicks(rowSpacing, speed);  // Move EXACTLY rowSpacing distance
+        delay(100);  // Small pause for stability
         turnLeft90();
+        delay(100);  // Small pause before next row
       }
     }
     
