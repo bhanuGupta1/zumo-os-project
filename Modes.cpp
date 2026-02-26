@@ -1,11 +1,37 @@
 /*
  * Modes.cpp - Ballistic Behavior Implementations
  * 
- * This file contains the implementation of all 4 ballistic behaviors
- * required for the SBA assignment. Each mode uses encoder-based
- * movement for precise control and repeatability.
+ * ========== WHAT THIS FILE DOES ==========
+ * This file contains all 4 ballistic behaviors for the SBA assignment:
+ * 1. Square Spiral - Spirals inward to center with 90° turns
+ * 2. Zig-Zag - Alternating diagonal movements
+ * 3. Square Zig-Zag - Lawn mowing pattern with parallel rows
+ * 4. Circle - Continuous circular path
  * 
- * Key Concepts:
+ * ========== HOW TO ADJUST BEHAVIORS ==========
+ * Each mode has an "ADJUSTABLE PARAMETERS" section at the top.
+ * Look for these variables to customize the behavior:
+ * 
+ * SPEED:
+ * - Change "speed" variable (0-500)
+ * - Safe limit: 400, Ludicrous mode: 500
+ * - Higher = faster, Lower = more controlled
+ * 
+ * DISTANCE/SIZE:
+ * - Change "sideLength", "segmentLength", "rowLength" variables
+ * - Measured in encoder ticks (roughly 1 tick = 0.1mm)
+ * - Higher = larger pattern, Lower = smaller pattern
+ * 
+ * ANGLES:
+ * - Turns use turnRight90() and turnLeft90() for 90° turns
+ * - For zig-zag angles, adjust "TURN_90_TICKS + 100" value
+ * 
+ * CIRCLE DIAMETER:
+ * - Adjust "outerSpeed" and "innerSpeed" difference
+ * - Larger difference = tighter circle (smaller diameter)
+ * - Smaller difference = wider circle (larger diameter)
+ * 
+ * ========== KEY CONCEPTS ==========
  * - Encoder ticks: Measure wheel rotation for accurate distance control
  * - Motor speed control: Set left/right motor speeds independently
  * - Timing-based movement: Use millis() for time-based patterns
@@ -64,10 +90,20 @@ void modeSquareSpiral() {
   display.print("LUDICROUS!");
   delay(500);
   
-  // Configuration parameters - INWARD SPIRAL!
-  int sideLength = 1200;  // Starting side length (large)
-  int decrement = 60;     // Small decrements for tight spiral
-  int speed = 500;        // BEYOND THE LIMIT!
+  // ========== ADJUSTABLE PARAMETERS ==========
+  // HOW TO CHANGE THE SPIRAL:
+  
+  int sideLength = 1200;  // Starting side length (in encoder ticks)
+                          // INCREASE = larger starting spiral (try 1500-2000)
+                          // DECREASE = smaller starting spiral (try 800-1000)
+  
+  int decrement = 60;     // How much to shrink each side (in ticks)
+                          // INCREASE = looser spiral, fewer loops (try 80-100)
+                          // DECREASE = tighter spiral, more loops (try 40-50)
+  
+  int speed = 500;        // Motor speed (0-500, safe limit is 400)
+                          // INCREASE = faster movement (max 500)
+                          // DECREASE = slower, more controlled (try 300-400)
   
   // Main spiral loop - continue until side length becomes too small
   while (sideLength > 100) {
@@ -118,10 +154,24 @@ void modeZigzag() {
   display.print("LUDICROUS!");
   delay(500);
   
-  // Configuration parameters - BEYOND LIMITS!
-  int segmentLength = 800; // Longer segments
-  int zigzags = 8;         // More zigzags
-  int speed = 500;         // BEYOND THE LIMIT!
+  // ========== ADJUSTABLE PARAMETERS ==========
+  // HOW TO CHANGE THE ZIG-ZAG:
+  
+  int segmentLength = 800; // Length of each straight segment (in encoder ticks)
+                           // INCREASE = longer diagonal lines (try 1000-1200)
+                           // DECREASE = shorter, tighter zigzag (try 500-700)
+  
+  int zigzags = 8;         // Number of zig-zag segments to perform
+                           // INCREASE = more zigzags, longer pattern (try 10-12)
+                           // DECREASE = fewer zigzags, shorter pattern (try 5-6)
+  
+  int speed = 500;         // Motor speed (0-500, safe limit is 400)
+                           // INCREASE = faster movement (max 500)
+                           // DECREASE = slower, more controlled (try 300-400)
+  
+  // Turn angle adjustment: Change "TURN_90_TICKS + 100" below
+  // INCREASE +100 = sharper angle, narrower zigzag (try +150)
+  // DECREASE +100 = wider angle, broader zigzag (try +50)
   
   // Main zig-zag loop
   for (int i = 0; i < zigzags; i++) {
@@ -183,11 +233,24 @@ void modeSquareZigzag() {
   display.print("LUDICROUS!");
   delay(500);
   
-  // Configuration parameters - BEYOND LIMITS!
-  int rowLength = 1000;    // Longer rows
-  int rows = 6;            // More rows
-  int rowSpacing = 250;    // Wider spacing
-  int speed = 500;         // BEYOND THE LIMIT!
+  // ========== ADJUSTABLE PARAMETERS ==========
+  // HOW TO CHANGE THE LAWN MOWING PATTERN:
+  
+  int rowLength = 1000;    // Length of each row (in encoder ticks)
+                           // INCREASE = longer rows (try 1200-1500)
+                           // DECREASE = shorter rows (try 700-900)
+  
+  int rows = 6;            // Number of parallel rows to drive
+                           // INCREASE = more rows, larger area (try 8-10)
+                           // DECREASE = fewer rows, smaller area (try 4-5)
+  
+  int rowSpacing = 250;    // Distance between parallel rows (in ticks)
+                           // INCREASE = wider spacing between rows (try 300-400)
+                           // DECREASE = tighter spacing, more coverage (try 150-200)
+  
+  int speed = 500;         // Motor speed (0-500, safe limit is 400)
+                           // INCREASE = faster movement (max 500)
+                           // DECREASE = slower, more controlled (try 300-400)
   
   // Main lawn-mowing loop
   for (int i = 0; i < rows; i++) {
@@ -249,12 +312,24 @@ void modeCircle() {
   display.print("LUDICROUS!");
   delay(500);
   
-  // Motor speed configuration - BEYOND LIMITS!
-  int outerSpeed = 450;  // LUDICROUS outer wheel speed!
-  int innerSpeed = 250;  // LUDICROUS inner wheel speed!
+  // ========== ADJUSTABLE PARAMETERS ==========
+  // HOW TO CHANGE THE CIRCLE:
   
-  // Adjusted duration for complete circle at ludicrous speed
-  unsigned long circleDuration = 7000; // 7 seconds at ludicrous speed
+  int outerSpeed = 450;  // Outer wheel speed (faster wheel)
+                         // INCREASE = faster circle, larger radius (try 480-500)
+                         // DECREASE = slower circle (try 350-400)
+  
+  int innerSpeed = 250;  // Inner wheel speed (slower wheel)
+                         // INCREASE = larger circle radius (try 280-320)
+                         // DECREASE = tighter circle, smaller radius (try 200-230)
+                         // NOTE: Speed difference (outerSpeed - innerSpeed) controls radius
+                         //       Larger difference = tighter circle
+                         //       Smaller difference = wider circle
+  
+  unsigned long circleDuration = 7000; // How long to drive in circle (milliseconds)
+                                       // INCREASE = more than one full circle (try 9000-12000)
+                                       // DECREASE = partial circle (try 4000-6000)
+                                       // NOTE: Adjust this to make circle close perfectly
   unsigned long startTime = millis();
   
   // Main circle loop - run until duration elapsed
