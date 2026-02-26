@@ -156,13 +156,18 @@
 // - Fresh batteries
 // - Smooth hard floor
 // - Medium speed (200-300)
+//
+// NOTE: Values DOUBLED from original 320/640 because physical turns
+// were measuring less than 90 degrees. Adjust based on testing.
 
-#define TURN_90_TICKS 320          // Encoder ticks for 90-degree turn
+#define TURN_90_TICKS 640          // Encoder ticks for 90-degree turn (DOUBLED for testing)
                                    // Used by turnRight90() and turnLeft90()
+                                   // Original value was 320, doubled to 640
                                    // Adjust if robot turns more/less than 90°
                                    
-#define TURN_180_TICKS 640         // Encoder ticks for 180-degree turn
+#define TURN_180_TICKS 1280        // Encoder ticks for 180-degree turn (DOUBLED for testing)
                                    // Should be approximately 2 × TURN_90_TICKS
+                                   // Original value was 640, doubled to 1280
                                    // Used by turn180() function
                                    
 #define SQUARE_SIDE_TICKS 900      // Encoder ticks for square side length

@@ -328,10 +328,11 @@ void modeZigzag() {
                            // INCREASE = faster movement (max 500)
                            // DECREASE = slower, more controlled (try 300-400)
   
-  int turnAngleTicks = 240; // Turn angle in encoder ticks (controls zigzag sharpness)
-                            // INCREASE = sharper turns, narrower zigzag (try 250-300)
-                            // DECREASE = gentler turns, wider zigzag (try 150-180)
-                            // NOTE: TURN_90_TICKS ≈ 320, so 240 ≈ 67 degrees
+  int turnAngleTicks = 480; // Turn angle in encoder ticks (controls zigzag sharpness)
+                            // DOUBLED from 240 to 480 for testing (matches 90-degree fix)
+                            // INCREASE = sharper turns, narrower zigzag (try 500-600)
+                            // DECREASE = gentler turns, wider zigzag (try 300-400)
+                            // NOTE: TURN_90_TICKS = 640, so 480 ≈ 67 degrees
   
   // Main zig-zag loop
   for (int i = 0; i < zigzags; i++) {
