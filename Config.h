@@ -1,136 +1,97 @@
-/*
- * Config.h - Configuration Constants
- * 
- * ========== WHAT THIS FILE DOES ==========
- * This file contains all tunable parameters and constants for the robot.
- * Centralizing configuration here makes it easy to adjust robot behavior
- * without modifying the main code in multiple places.
- * 
- * ========== WHY USE #define ==========
- * #define creates compile-time constants that:
- * - Use no RAM (replaced during compilation)
- * - Cannot be changed during runtime
- * - Make code more readable (names instead of magic numbers)
- * - Easy to adjust in one place
- * 
- * ========== HOW TO ADJUST ROBOT BEHAVIOR ==========
- * Change values in this file to tune robot performance:
- * - Increase speeds for faster movement (max 400, ludicrous 500)
- * - Adjust encoder ticks if turns are not accurate
- * 
- * ========== CATEGORIES ==========
- * - Motor speeds: How fast robot moves in different modes
- * - Timing: Delays and timeouts
- * - Encoder calibration: Distance and angle measurements
- */
-
 #pragma once
 
-// ============ MOTOR SPEEDS ============
-// Motor speed values range from -400 to 400 (safe limit)
-// Current implementation allows up to 500 (LUDICROUS MODE!)
-// 
-// HOW TO ADJUST:
-// - Higher values = faster movement, but less control and accuracy
-// - Lower values = slower but more precise and stable
-// - Negative values = reverse direction
-// 
-// IMPORTANT: Battery level affects actual speed
-// - Fresh batteries: Robot moves faster at same speed value
-// - Low batteries: Robot moves slower, may need higher values
+// ============================================================
+//  ZumoOS V6 — Smooth Dead Zone + Spiral Search
+// ============================================================
 
-#define ENCODER_SPEED 250
-// Speed for encoder-based movement
-// Used in ballistic behaviors for straight lines
+// --- Encoder & Movement ---
+#define ENCODER_SPEED       250
+#define TURN_90_TICKS       640
+#define TURN_180_TICKS      1280
+#define SQUARE_SIDE_TICKS   900
+#define TURN_SPEED          250
 
-// ============ TIMING ============
-// Time-based parameters in milliseconds (1000 ms = 1 second)
-// 
-// HOW TO ADJUST:
-// - Increase for longer delays/timeouts
-// - Decrease for faster response/shorter waits
+// --- UI / Timing ---
+#define MENU_TIMEOUT_MS     10000
+#define BUTTON_DEBOUNCE_MS  50
 
-#define MENU_TIMEOUT_MS 10000
-// Menu auto-timeout (10 seconds)
-// How long menu waits before auto-selecting
-// Set to 0 to disable timeout
+// --- Calibration ---
+#define CALIBRATION_SPINS      100
+#define CALIBRATION_DELAY_MS   15
+#define CALIBRATION_SPEED      120
 
-#define BUTTON_DEBOUNCE_MS 50
-// Button debounce delay (50 milliseconds)
-// Prevents multiple triggers from one press
-// Typical range: 20-100 ms
+// ============================================================
+//  PID — Simple linear PD. The smooth dead zone handles the rest.
+// ============================================================
+#define LINE_KP             0.15f
+#define LINE_KD             1.5f
 
-// ============ ENCODER CONSTANTS ============
-// Encoder tick counts for precise turns and movements
-// 
-// WHAT ARE ENCODER TICKS?
-// Encoders count wheel rotations using magnetic sensors. Each "tick"
-// represents a small rotation increment. More ticks = more distance/angle.
-// 
-// HOW TO CALIBRATE:
-// 1. Run robot and measure actual turn angle
-// 2. If turn is too small: Increase tick value
-// 3. If turn is too large: Decrease tick value
-// 4. Repeat until accurate
-// 
-// FACTORS AFFECTING ACCURACY:
-// - Battery level (low battery = less power = smaller turns)
-// - Surface friction (carpet vs smooth floor)
-// - Motor speed (faster = less accurate)
-// - Wheel slippage
-// 
-// THESE VALUES ARE CALIBRATED FOR:
-// - Zumo32U4 robot
-// - Fresh batteries
-// - Smooth hard floor
-// - Medium speed (200-300)
+// ============================================================
+//  SMOOTH DEAD ZONE
 //
-// NOTE: Values DOUBLED from original 320/640 because physical turns
-// were measuring less than 90 degrees. Adjust based on testing.
+//  Instead of: error < threshold → 0, error >= threshold → full
+//  We use:     error smoothly ramps from 0% to 100% over a range
+//
+//  DEAD_INNER: errors below this → 0% correction (silent zone)
+//  DEAD_OUTER: errors above this → 100% correction (full PD)
+//  Between inner and outer → smooth linear ramp
+//
+//  This eliminates the boundary oscillation that causes jitter.
+// ============================================================
+#define DEAD_INNER          150       // Below this: zero correction
+#define DEAD_OUTER          400       // Above this: full correction
+                                      // 150–400: smooth ramp
 
-#define TURN_90_TICKS 640
-// Encoder ticks for 90-degree turn (DOUBLED for testing)
-// Used by turnRight90() and turnLeft90()
-// Original value was 320, doubled to 640
-// Adjust if robot turns more/less than 90°
+// ============================================================
+//  SPEED
+// ============================================================
+#define SPEED_STRAIGHT      220       // Faster cruise
+#define SPEED_CURVE         80        // Tight curve minimum
+#define SPEED_ERROR_THRESH  500       // Start slowing above this error
+#define SPEED_REDUCE_RATE   0.10f
 
-#define TURN_180_TICKS 1280
-// Encoder ticks for 180-degree turn (DOUBLED for testing)
-// Should be approximately 2 × TURN_90_TICKS
-// Original value was 640, doubled to 1280
-// Used by turn180() function
+// ============================================================
+//  CORNER HANDLING
+// ============================================================
+#define CORNER_SENSOR_THRESH 500
+#define CORNER_BOOST         100      // Strong differential kick
+#define CORNER_SPEED         80       // Slow into corners
 
-#define SQUARE_SIDE_TICKS 900
-// Encoder ticks for square side length
-// Used in square patterns
-// Approximately 30cm at typical speed
+// ============================================================
+//  SENSOR FILTERING
+// ============================================================
+#define EMA_ALPHA           0.85f     // Light filter — less lag, less oscillation
 
-// ============ TURN SPEED ============
-// Speed used for turning operations
+// ============================================================
+//  LINE LOSS
+// ============================================================
+#define LINE_LOST_THRESH    80
 
-#define TURN_SPEED 250
-// Speed when turning (used by turnRight90, turnLeft90, turn180)
-// Medium speed for accurate turns
-// Adjust if turns are not precise
+// ============================================================
+//  SPIRAL SEARCH — Faster and wider
+// ============================================================
+#define SPIRAL_INNER_START   30       // Tighter initial spiral
+#define SPIRAL_OUTER_START   180      // Faster outer wheel
+#define SPIRAL_RAMP_RATE     3        // Expand faster (was 2)
+#define SPIRAL_STEP_MS       25       // Faster steps (was 30)
+#define SPIRAL_MAX_STEPS     90       // More steps before giving up
+#define SPIRAL_BACKUP_MS     120      // Shorter backup
+#define SPIRAL_BACKUP_SPD    90
 
-// ============ CALIBRATION ============
-// Parameters for sensor calibration routines
-// 
-// WHAT IS CALIBRATION?
-// Line sensors need to see both light and dark surfaces to establish
-// their min/max values. Calibration spins robot to expose sensors to
-// different surfaces.
-// 
-// HOW TO ADJUST:
-// - More spins = better calibration, but takes longer
-// - Fewer spins = faster, but may miss some surfaces
+// ============================================================
+//  INTERSECTION
+// ============================================================
+#define INTERSECTION_THRESH  700
+#define INTERSECTION_COUNT   4
+#define INTERSECTION_BRAKE   130      // Faster through intersections
 
-#define CALIBRATION_SPINS 80
-// Number of calibration readings to take
-// More = better calibration
-// Typical range: 50-100
+// ============================================================
+//  MOTOR LIMITS
+// ============================================================
+#define MOTOR_MAX            300
+#define MOTOR_MIN           -300
 
-#define CALIBRATION_DELAY_MS 20
-// Delay between calibration readings
-// Gives sensors time to settle
-// Typical range: 10-30 ms
+// ============================================================
+//  DISPLAY
+// ============================================================
+#define DISPLAY_UPDATE_MS    300

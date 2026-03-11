@@ -1,0 +1,639 @@
+═══════════════════════════════════════════════════════════════════════════
+ZUMO ROBOT - PARAMETER TUNING GUIDE
+═══════════════════════════════════════════════════════════════════════════
+Student: Bhanu | Assignment: SBA Ballistic Behaviors
+
+This guide shows EXACTLY where to change values to modify robot behavior.
+Each section tells you: FILE → LINE → WHAT IT DOES → HOW TO CHANGE IT
+
+═══════════════════════════════════════════════════════════════════════════
+SECTION 1: GLOBAL SETTINGS (Config.h or Config_Clean.h)
+═══════════════════════════════════════════════════════════════════════════
+
+1.1 TURN ANGLES
+───────────────
+FILE: Config.h (or Config_Clean.h)
+LINE: #define TURN_90_TICKS 640
+
+WHAT IT DOES:
+- Controls how much robot turns for 90 degrees
+- Used by turnRight90() and turnLeft90() functions
+
+HOW TO CHANGE:
+- Robot turns TOO LITTLE? → INCREASE value (try 700, 750, 800)
+- Robot turns TOO MUCH? → DECREASE value (try 600, 550, 500)
+- Current: 640 (doubled from original 320)
+
+EXAMPLE:
+#define TURN_90_TICKS 700    // Makes robot turn MORE
+
+───────────────
+
+FILE: Config.h (or Config_Clean.h)
+LINE: #define TURN_180_TICKS 1280
+
+WHAT IT DOES:
+- Controls 180 degree turns
+- Should be approximately 2 × TURN_90_TICKS
+
+HOW TO CHANGE:
+- Always keep it = 2 × TURN_90_TICKS
+- If TURN_90_TICKS = 700, then TURN_180_TICKS = 1400
+
+───────────────
+
+1.2 TURN SPEED
+───────────────
+FILE: Config.h (or Config_Clean.h)
+LINE: #define TURN_SPEED 250
+
+WHAT IT DOES:
+- How fast robot spins when turning
+- Used by all turn functions
+
+HOW TO CHANGE:
+- FASTER turns? → INCREASE (try 300, 350, 400)
+- SLOWER/more accurate turns? → DECREASE (try 200, 150)
+- Range: 100-400 (safe), up to 500 (max)
+
+EXAMPLE:
+#define TURN_SPEED 350    // Faster turns
+
+───────────────
+
+1.3 DRIVING SPEED
+───────────────
+FILE: Config.h (or Config_Clean.h)
+LINE: #define ENCODER_SPEED 250
+
+WHAT IT DOES:
+- Default speed for straight line driving
+- Not heavily used (most modes set their own speed)
+
+HOW TO CHANGE:
+- FASTER? → INCREASE (try 300, 350, 400)
+- SLOWER? → DECREASE (try 200, 150)
+
+
+═══════════════════════════════════════════════════════════════════════════
+SECTION 2: SQUARE SPIRAL SETTINGS (Modes.cpp or Modes_Clean.cpp)
+═══════════════════════════════════════════════════════════════════════════
+
+2.1 STARTING SIZE
+───────────────
+FILE: Modes.cpp (or Modes_Clean.cpp)
+FUNCTION: modeSquareSpiral()
+LINE: int sideLength = inward ? 1400 : 200;
+
+WHAT IT DOES:
+- Sets starting square size
+- 1400 = inward spiral (starts BIG)
+- 200 = outward spiral (starts SMALL)
+
+HOW TO CHANGE:
+- BIGGER starting square? → INCREASE 1400 (try 1600, 1800, 2000)
+- SMALLER starting square? → DECREASE 1400 (try 1200, 1000)
+- For outward: INCREASE 200 (try 300, 400) for bigger start
+
+EXAMPLE:
+int sideLength = inward ? 1800 : 300;  // Bigger squares
+
+───────────────
+
+2.2 SIZE CHANGE RATE
+───────────────
+FILE: Modes.cpp (or Modes_Clean.cpp)
+FUNCTION: modeSquareSpiral()
+LINE: int increment = 70;
+
+WHAT IT DOES:
+- How much each side changes
+- Higher = faster spiral (fewer loops)
+- Lower = slower spiral (more loops)
+
+HOW TO CHANGE:
+- FASTER spiral? → INCREASE (try 100, 120, 150)
+- SLOWER/tighter spiral? → DECREASE (try 50, 40, 30)
+
+EXAMPLE:
+int increment = 100;  // Faster spiral, fewer squares
+
+───────────────
+
+2.3 DRIVING SPEED
+───────────────
+FILE: Modes.cpp (or Modes_Clean.cpp)
+FUNCTION: modeSquareSpiral()
+LINE: int speed = 500;
+
+WHAT IT DOES:
+- How fast robot drives each side
+
+HOW TO CHANGE:
+- FASTER? → Keep at 500 (maximum)
+- SLOWER? → DECREASE (try 400, 350, 300)
+
+EXAMPLE:
+int speed = 350;  // Slower, more controlled
+
+───────────────
+
+2.4 MINIMUM/MAXIMUM SIZE
+───────────────
+FILE: Modes.cpp (or Modes_Clean.cpp)
+FUNCTION: modeSquareSpiral()
+LINES: 
+  int minSide = 150;
+  int maxSide = 1500;
+
+WHAT IT DOES:
+- minSide = when to stop (inward spiral)
+- maxSide = when to stop (outward spiral)
+
+HOW TO CHANGE:
+- Spiral MORE? → DECREASE minSide (try 100, 80)
+- Spiral MORE? → INCREASE maxSide (try 1800, 2000)
+
+
+═══════════════════════════════════════════════════════════════════════════
+SECTION 3: ZIG-ZAG SETTINGS (Modes.cpp or Modes_Clean.cpp)
+═══════════════════════════════════════════════════════════════════════════
+
+3.1 SEGMENT LENGTH
+───────────────
+FILE: Modes.cpp (or Modes_Clean.cpp)
+FUNCTION: modeZigzag()
+LINE: int segmentLength = 900;
+
+WHAT IT DOES:
+- Length of each diagonal line in zigzag
+
+HOW TO CHANGE:
+- LONGER lines? → INCREASE (try 1000, 1200, 1500)
+- SHORTER lines? → DECREASE (try 700, 600, 500)
+
+EXAMPLE:
+int segmentLength = 1200;  // Longer zigzag lines
+
+───────────────
+
+3.2 NUMBER OF ZIGZAGS
+───────────────
+FILE: Modes.cpp (or Modes_Clean.cpp)
+FUNCTION: modeZigzag()
+LINE: int zigzags = 6;
+
+WHAT IT DOES:
+- How many zigzag segments to perform
+
+HOW TO CHANGE:
+- MORE zigzags? → INCREASE (try 8, 10, 12)
+- FEWER zigzags? → DECREASE (try 4, 3)
+
+EXAMPLE:
+int zigzags = 8;  // More zigzag segments
+
+───────────────
+
+3.3 DRIVING SPEED
+───────────────
+FILE: Modes.cpp (or Modes_Clean.cpp)
+FUNCTION: modeZigzag()
+LINE: int speed = 400;
+
+HOW TO CHANGE:
+- FASTER? → INCREASE (try 450, 500)
+- SLOWER? → DECREASE (try 350, 300)
+
+───────────────
+
+3.4 TURN ANGLE (SHARPNESS)
+───────────────
+FILE: Modes.cpp (or Modes_Clean.cpp)
+FUNCTION: modeZigzag()
+LINE: int turnAngleTicks = 480;
+
+WHAT IT DOES:
+- Controls zigzag sharpness
+- Higher = sharper turns (narrower zigzag)
+- Lower = gentler turns (wider zigzag)
+
+HOW TO CHANGE:
+- SHARPER zigzag? → INCREASE (try 500, 550, 600)
+- WIDER zigzag? → DECREASE (try 400, 350, 300)
+
+EXAMPLE:
+int turnAngleTicks = 550;  // Sharper zigzag
+
+
+═══════════════════════════════════════════════════════════════════════════
+SECTION 4: SQUARE ZIG-ZAG SETTINGS (Modes.cpp or Modes_Clean.cpp)
+═══════════════════════════════════════════════════════════════════════════
+
+4.1 COLUMN HEIGHT
+───────────────
+FILE: Modes.cpp (or Modes_Clean.cpp)
+FUNCTION: modeSquareZigzag()
+LINE: int columnHeight = 1400;
+
+WHAT IT DOES:
+- Height of each vertical line
+
+HOW TO CHANGE:
+- TALLER lines? → INCREASE (try 1600, 1800, 2000)
+- SHORTER lines? → DECREASE (try 1200, 1000, 800)
+
+EXAMPLE:
+int columnHeight = 1600;  // Taller vertical lines
+
+───────────────
+
+4.2 NUMBER OF COLUMNS
+───────────────
+FILE: Modes.cpp (or Modes_Clean.cpp)
+FUNCTION: modeSquareZigzag()
+LINE: int columns = 3;
+
+WHAT IT DOES:
+- How many vertical lines to create
+
+HOW TO CHANGE:
+- MORE lines? → INCREASE (try 4, 5, 6)
+- FEWER lines? → DECREASE (try 2)
+
+EXAMPLE:
+int columns = 5;  // 5 vertical lines instead of 3
+
+───────────────
+
+4.3 COLUMN SPACING
+───────────────
+FILE: Modes.cpp (or Modes_Clean.cpp)
+FUNCTION: modeSquareZigzag()
+LINE: int columnSpacing = 400;
+
+WHAT IT DOES:
+- Distance between vertical lines
+
+HOW TO CHANGE:
+- WIDER spacing? → INCREASE (try 500, 600, 700)
+- NARROWER spacing? → DECREASE (try 300, 250, 200)
+
+EXAMPLE:
+int columnSpacing = 500;  // More space between lines
+
+───────────────
+
+4.4 DRIVING SPEED
+───────────────
+FILE: Modes.cpp (or Modes_Clean.cpp)
+FUNCTION: modeSquareZigzag()
+LINE: int speed = 350;
+
+HOW TO CHANGE:
+- FASTER? → INCREASE (try 400, 450)
+- SLOWER? → DECREASE (try 300, 250)
+
+
+═══════════════════════════════════════════════════════════════════════════
+SECTION 5: CIRCLE SETTINGS (Modes.cpp or Modes_Clean.cpp)
+═══════════════════════════════════════════════════════════════════════════
+
+5.1 CIRCLE SIZE (RADIUS)
+───────────────
+FILE: Modes.cpp (or Modes_Clean.cpp)
+FUNCTION: modeCircle()
+LINES:
+  int outerSpeed = 450;
+  int innerSpeed = 250;
+
+WHAT IT DOES:
+- Speed difference controls circle radius
+- Bigger difference = SMALLER circle (tighter)
+- Smaller difference = LARGER circle (wider)
+
+HOW TO CHANGE FOR SMALLER CIRCLE:
+  int outerSpeed = 450;
+  int innerSpeed = 200;  // Bigger difference = smaller circle
+
+HOW TO CHANGE FOR LARGER CIRCLE:
+  int outerSpeed = 450;
+  int innerSpeed = 300;  // Smaller difference = larger circle
+
+EXAMPLES:
+// Tiny circle:
+int outerSpeed = 450;
+int innerSpeed = 150;
+
+// Huge circle:
+int outerSpeed = 450;
+int innerSpeed = 350;
+
+───────────────
+
+5.2 CIRCLE DURATION
+───────────────
+FILE: Modes.cpp (or Modes_Clean.cpp)
+FUNCTION: modeCircle()
+LINE: unsigned long circleDuration = 7000;
+
+WHAT IT DOES:
+- How long robot drives (in milliseconds)
+- 7000 = 7 seconds = approximately 1 full circle
+
+HOW TO CHANGE:
+- MORE than 1 circle? → INCREASE (try 10000, 14000)
+- LESS than 1 circle? → DECREASE (try 5000, 3500)
+- Adjust until circle closes perfectly
+
+EXAMPLE:
+unsigned long circleDuration = 10000;  // 10 seconds (1.4 circles)
+
+
+═══════════════════════════════════════════════════════════════════════════
+SECTION 6: SPIRAL SETTINGS (Modes.cpp or Modes_Clean.cpp)
+═══════════════════════════════════════════════════════════════════════════
+NOTE: This is the BONUS mode (not required in assignment)
+
+6.1 OUTER WHEEL SPEED
+───────────────
+FILE: Modes.cpp (or Modes_Clean.cpp)
+FUNCTION: modeSpiral()
+LINE: int outerSpeed = 400;
+
+WHAT IT DOES:
+- Speed of outer wheel (stays constant)
+
+HOW TO CHANGE:
+- FASTER spiral? → INCREASE (try 450, 500)
+- SLOWER spiral? → DECREASE (try 350, 300)
+
+───────────────
+
+6.2 STARTING INNER SPEED
+───────────────
+FILE: Modes.cpp (or Modes_Clean.cpp)
+FUNCTION: modeSpiral()
+LINE: int startInnerSpeed = inward ? 350 : 100;
+
+WHAT IT DOES:
+- Starting speed of inner wheel
+- 350 = inward (starts wide)
+- 100 = outward (starts tight)
+
+HOW TO CHANGE:
+- Different starting radius? → Change these values
+- Bigger start (inward): INCREASE 350 (try 380, 400)
+- Smaller start (outward): DECREASE 100 (try 80, 50)
+
+───────────────
+
+6.3 ENDING INNER SPEED
+───────────────
+FILE: Modes.cpp (or Modes_Clean.cpp)
+FUNCTION: modeSpiral()
+LINE: int endInnerSpeed = inward ? 100 : 350;
+
+WHAT IT DOES:
+- When to stop spiraling
+
+HOW TO CHANGE:
+- Spiral MORE (inward)? → DECREASE 100 (try 80, 50)
+- Spiral MORE (outward)? → INCREASE 350 (try 380, 400)
+
+───────────────
+
+6.4 SPIRAL SPEED (HOW FAST RADIUS CHANGES)
+───────────────
+FILE: Modes.cpp (or Modes_Clean.cpp)
+FUNCTION: modeSpiral()
+LINE: float speedChangeRate = inward ? -0.5 : 0.5;
+
+WHAT IT DOES:
+- How fast the spiral tightens/widens
+- Higher = faster spiral (fewer loops)
+- Lower = slower spiral (more loops)
+
+HOW TO CHANGE:
+- FASTER spiral? → INCREASE (try -1.0 / 1.0)
+- SLOWER spiral? → DECREASE (try -0.3 / 0.3)
+
+EXAMPLE:
+float speedChangeRate = inward ? -1.0 : 1.0;  // Faster spiral
+
+
+═══════════════════════════════════════════════════════════════════════════
+SECTION 7: QUICK REFERENCE TABLE
+═══════════════════════════════════════════════════════════════════════════
+
+WANT TO...                          | FILE          | VARIABLE TO CHANGE
+────────────────────────────────────|───────────────|────────────────────
+Fix 90° turns                       | Config.h      | TURN_90_TICKS
+Make turns faster/slower            | Config.h      | TURN_SPEED
+Make square spiral bigger           | Modes.cpp     | sideLength (1400)
+Make square spiral faster           | Modes.cpp     | increment (70)
+Make zigzag longer                  | Modes.cpp     | segmentLength (900)
+Make zigzag sharper                 | Modes.cpp     | turnAngleTicks (480)
+Make more zigzags                   | Modes.cpp     | zigzags (6)
+Make vertical lines taller          | Modes.cpp     | columnHeight (1400)
+Make more vertical lines            | Modes.cpp     | columns (3)
+Space vertical lines wider          | Modes.cpp     | columnSpacing (400)
+Make circle smaller                 | Modes.cpp     | innerSpeed (decrease)
+Make circle larger                  | Modes.cpp     | innerSpeed (increase)
+Make circle complete properly       | Modes.cpp     | circleDuration (7000)
+Make everything faster              | All modes     | speed variables
+
+
+═══════════════════════════════════════════════════════════════════════════
+SECTION 8: TESTING TIPS
+═══════════════════════════════════════════════════════════════════════════
+
+1. ALWAYS test ONE change at a time
+2. Write down original values before changing
+3. Start with small changes (±10-20%)
+4. Battery level affects speed - test with fresh batteries
+5. Surface matters - smooth floor vs carpet gives different results
+6. Use Button B to stop robot early if something goes wrong
+
+EXAMPLE TESTING PROCESS:
+1. Original: TURN_90_TICKS = 640
+2. Robot turns 80° (too little)
+3. Try: TURN_90_TICKS = 700
+4. Test again
+5. Still too little? Try 750
+6. Too much? Try 675
+7. Keep adjusting until perfect
+
+
+═══════════════════════════════════════════════════════════════════════════
+END OF TUNING GUIDE
+═══════════════════════════════════════════════════════════════════════════
+
+For questions during viva, you can explain:
+"I can adjust the robot's behavior by changing parameters in Config.h for 
+global settings like turn angles, or in Modes.cpp for mode-specific settings 
+like spiral size, zigzag length, or circle radius."
+
+
+═══════════════════════════════════════════════════════════════════════════
+SECTION 8: LINE FOLLOWING SETTINGS (Modes.cpp or Modes_Clean.cpp)
+═══════════════════════════════════════════════════════════════════════════
+NEW MODE ADDED: Line Following with Maximum Speed (500)
+
+8.1 LINE FOLLOWING SPEED
+───────────────
+FILE: Config.h
+LINE: #define LINE_SPEED 500
+
+WHAT IT DOES:
+- Base speed for line following
+- Set to MAXIMUM (500) for fastest line following
+
+HOW TO CHANGE:
+- SLOWER/more controlled? → DECREASE (try 400, 350, 300)
+- Keep at 500 for maximum speed
+
+EXAMPLE:
+#define LINE_SPEED 400  // Slower, more controlled
+
+───────────────
+
+8.2 PROPORTIONAL GAIN (Kp)
+───────────────
+FILE: Config.h
+LINE: #define LINE_KP 0.2f
+
+WHAT IT DOES:
+- Controls how strongly robot corrects when off the line
+- Higher = stronger correction (may oscillate/wobble)
+- Lower = gentler correction (may lose line)
+
+HOW TO CHANGE:
+- Robot wobbles too much? → DECREASE (try 0.15, 0.1)
+- Robot loses line? → INCREASE (try 0.25, 0.3)
+
+EXAMPLE:
+#define LINE_KP 0.15f  // Gentler correction
+
+───────────────
+
+8.3 DERIVATIVE GAIN (Kd)
+───────────────
+FILE: Config.h
+LINE: #define LINE_KD 3.0f
+
+WHAT IT DOES:
+- Dampens oscillations and smooths movement
+- Higher = smoother but may be sluggish
+- Lower = more responsive but may wobble
+
+HOW TO CHANGE:
+- Too wobbly? → INCREASE (try 4.0, 5.0)
+- Too sluggish? → DECREASE (try 2.0, 1.5)
+
+EXAMPLE:
+#define LINE_KD 4.0f  // Smoother movement
+
+───────────────
+
+8.4 CALIBRATION SETTINGS
+───────────────
+FILE: Modes.cpp
+FUNCTION: modeLineFollow()
+
+The mode automatically calibrates when started:
+- Spins robot to expose sensors to light and dark
+- Uses CALIBRATION_SPINS (80) from Config.h
+- Uses CALIBRATION_DELAY_MS (20) from Config.h
+
+To change calibration:
+- More thorough? → INCREASE CALIBRATION_SPINS in Config.h
+- Faster calibration? → DECREASE CALIBRATION_SPINS in Config.h
+
+───────────────
+
+8.5 HOW LINE FOLLOWING WORKS
+───────────────
+ALGORITHM:
+1. Auto-calibrates sensors (spins robot)
+2. Reads 5 line sensors
+3. Calculates position (0-4000, center = 2000)
+4. Calculates error (how far from center)
+5. Uses PID control to adjust motor speeds
+6. Left motor speeds up/slows down
+7. Right motor speeds up/slows down
+8. Robot steers to stay on line
+
+SPEED LIMITS:
+- Maximum speed: 500 (both motors)
+- Minimum speed: -500 (reverse if needed)
+- Automatically clamped to prevent damage
+
+STOPPING:
+- Press Button B to stop at any time
+
+
+═══════════════════════════════════════════════════════════════════════════
+SECTION 9: UPDATED QUICK REFERENCE TABLE
+═══════════════════════════════════════════════════════════════════════════
+
+WANT TO...                          | FILE          | VARIABLE TO CHANGE
+────────────────────────────────────|───────────────|────────────────────
+Fix 90° turns                       | Config.h      | TURN_90_TICKS
+Make turns faster/slower            | Config.h      | TURN_SPEED
+Make square spiral bigger           | Modes.cpp     | sideLength (1400)
+Make square spiral faster           | Modes.cpp     | increment (70)
+Make zigzag longer                  | Modes.cpp     | segmentLength (900)
+Make zigzag sharper                 | Modes.cpp     | turnAngleTicks (480)
+Make more zigzags                   | Modes.cpp     | zigzags (6)
+Make vertical lines taller          | Modes.cpp     | columnHeight (1400)
+Make more vertical lines            | Modes.cpp     | columns (3)
+Space vertical lines wider          | Modes.cpp     | columnSpacing (400)
+Make circle smaller                 | Modes.cpp     | innerSpeed (decrease)
+Make circle larger                  | Modes.cpp     | innerSpeed (increase)
+Make circle complete properly       | Modes.cpp     | circleDuration (7000)
+Make line following faster/slower   | Config.h      | LINE_SPEED (500)
+Fix line following wobble           | Config.h      | LINE_KP, LINE_KD
+Make everything faster              | All modes     | speed variables
+
+
+═══════════════════════════════════════════════════════════════════════════
+SECTION 10: LINE FOLLOWING TIPS
+═══════════════════════════════════════════════════════════════════════════
+
+BEFORE RUNNING LINE FOLLOW:
+1. Place robot on a black line on white surface
+2. Make sure line is at least 1cm wide
+3. Robot will auto-calibrate (spins in place)
+4. After calibration, robot follows line at MAX SPEED (500)
+
+TUNING FOR BEST PERFORMANCE:
+1. Start with default values (LINE_SPEED=500, KP=0.2, KD=3.0)
+2. If robot wobbles: INCREASE LINE_KD or DECREASE LINE_KP
+3. If robot loses line: INCREASE LINE_KP
+4. If too fast: DECREASE LINE_SPEED
+
+TESTING PROCESS:
+1. Test on straight line first
+2. Then test on gentle curves
+3. Finally test on sharp turns
+4. Adjust KP and KD as needed
+
+COMMON ISSUES:
+- Robot oscillates/wobbles → KP too high or KD too low
+- Robot loses line on curves → KP too low
+- Robot too slow to react → KD too high
+- Robot goes off track → Recalibrate or adjust lighting
+
+
+═══════════════════════════════════════════════════════════════════════════
+END OF UPDATED TUNING GUIDE
+═══════════════════════════════════════════════════════════════════════════
+
+TOTAL MODES NOW: 6
+1. Spiral (bonus)
+2. Square Spiral (required)
+3. Zig-Zag (required)
+4. Square Zig-Zag (required)
+5. Circle (required)
+6. Line Following (NEW - MAX SPEED)
